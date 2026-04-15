@@ -5,15 +5,15 @@
 // =============================================
 
 const CACHE_NAME = 'stb-app-v1';
-const DB_URL = '/ProgramSTB/db.json';
+const DB_URL = '/Program/db.json';
 
 // Fișiere de cached static (UI, fonts etc.)
 const STATIC_ASSETS = [
-  '/ProgramSTB/',
-  '/ProgramSTB/index.html',
-  '/ProgramSTB/manifest.json',
-  '/ProgramSTB/icon-192.png',
-  '/ProgramSTB/icon-512.png'
+  '/Program/',
+  '/Program/index.html',
+  '/Program/manifest.json',
+  '/Program/icon-192.png',
+  '/Program/icon-512.png'
 ];
 
 // --- INSTALL: cache static assets ---
