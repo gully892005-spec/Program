@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator Salariu STB</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #080d1a;
+    --card: #0f1626;
+    --card2: #141d30;
+    --border: rgba(255,255,255,0.07);
+    --green: #69f0ae;
+    --red: #f87171;
+    --accent: #60a5fa;
+    --orange: #fb923c;
+    --yellow: #fbbf24;
+    --purple: #a78bfa;
+    --muted: #4a5568;
+    --text: #e2e8f0;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1626 0%, #141d30 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: -0.02em;
+  }
+
+  .header p {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .container { padding: 16px; max-width: 500px; margin: 0 auto; }
+
+  /* Section */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Input grid */
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .input-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .input-grid.cols-1 { grid-template-columns: 1fr; }
+
+  .inp-wrap { display: flex; flex-direction: column; gap: 5px; }
+
+  .inp-wrap label {
+    font-size: 0.55rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .inp-wrap input, .inp-wrap select {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  .inp-wrap input:focus, .inp-wrap select:focus {
+    border-color: var(--green);
+  }
+
+  .inp-wrap select option { background: #1a2540; }
+
+  /* Toggle tichete */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+  }
+
+  .toggle-label {
+    font-size: 0.75rem;
+    color: var(--text);
+  }
+
+  .toggle-sub {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--muted);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--green); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* Calculeaza btn */
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--green);
+    color: #080d1a;
+    border: none;
+    border-radius: 14px;
+    font-family: var(--font);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+    transition: opacity 0.15s, transform 0.15s;
+    active: opacity 0.8;
+  }
+
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  /* Result */
+  .result-hidden { display: none; }
+
+  .net-card {
+    background: linear-gradient(135deg, rgba(105,240,174,0.08) 0%, rgba(96,165,250,0.05) 100%);
+    border: 1px solid rgba(105,240,174,0.2);
+    border-radius: 16px;
+    padding: 20px 16px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .net-label {
+    font-size: 0.6rem;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .net-value {
+    font-family: var(--mono);
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .net-value span { font-size: 1.2rem; opacity: 0.7; }
+
+  .net-sub {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .net-toggle-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  .net-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .net-badge.active {
+    background: rgba(105,240,174,0.12);
+    border-color: rgba(105,240,174,0.3);
+    color: var(--green);
+  }
+
+  /* Breakdown */
+  .breakdown {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .breakdown-title {
+    padding: 12px 16px;
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.8rem;
+  }
+
+  .brow:last-child { border-bottom: none; }
+
+  .brow-label { color: var(--muted); font-size: 0.75rem; }
+  .brow-label.sub { padding-left: 12px; font-size: 0.7rem; }
+  .brow-val { font-family: var(--mono); font-weight: 700; }
+  .brow-val.green { color: var(--green); }
+  .brow-val.red { color: var(--red); }
+  .brow-val.orange { color: var(--orange); }
+  .brow-val.accent { color: var(--accent); }
+  .brow-val.yellow { color: var(--yellow); }
+  .brow-val.purple { color: var(--purple); }
+  .brow.total { background: rgba(105,240,174,0.04); }
+  .brow.total .brow-label { color: var(--text); font-weight: 600; font-size: 0.8rem; }
+
+  /* Info note */
+  .note {
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.15);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.65rem;
+    color: var(--yellow);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .note strong { display: block; margin-bottom: 3px; }
+
+  /* Spor chips */
+  .spor-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .chip.active {
+    background: rgba(96,165,250,0.12);
+    border-color: rgba(96,165,250,0.3);
+    color: var(--accent);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💰 Calculator Salariu STB</h1>
+  <p>Estimare orientativă · STB SA · 2026</p>
+</div>
+
+<div class="container">
+
+  <!-- Spor vechime -->
+  <div class="section">
+    <div class="section-title">👤 Configurare personală</div>
+    <div class="inp-wrap">
+      <label>Spor vechime (%)</label>
+      <input type="number" id="inp-vechime" value="22" min="0" max="35" step="1">
+    </div>
+    <div class="spor-chips" style="margin-top:10px">
+      <span class="chip" onclick="setVechime(0)">0%</span>
+      <span class="chip" onclick="setVechime(5)">5%</span>
+      <span class="chip" onclick="setVechime(10)">10%</span>
+      <span class="chip" onclick="setVechime(15)">15%</span>
+      <span class="chip" onclick="setVechime(20)">20%</span>
+      <span class="chip active" onclick="setVechime(22)">22%</span>
+      <span class="chip" onclick="setVechime(25)">25%</span>
+      <span class="chip" onclick="setVechime(35)">35%</span>
+    </div>
+  </div>
+
+  <!-- Ore lucrate -->
+  <div class="section">
+    <div class="section-title">⏱ Ore și zile lucrate</div>
+    <div class="input-grid">
+      <div class="inp-wrap">
+        <label>Zile lucrate</label>
+        <input type="number" id="inp-zile" value="20" min="0" max="31">
+      </div>
+      <div class="inp-wrap">
+        <label>Ore totale lucrate</label>
+        <input type="number" id="inp-ore" value="160" min="0" step="0.1">
+      </div>
+    </div>
+    <div class="input-grid" style="margin-top:10px">
+      <div class="inp-wrap">
+        <label>Ore sâmbătă+duminică</label>
+        <input type="number" id="inp-sd" value="0" min="0" step="0.1">
+      </div>
+      <div class="inp-wrap">
+        <label>Ore suplimentare 100%</label>
+        <input type="number" id="inp-sup100" value="0" min="0" step="0.1">
+      </div>
+    </div>
+    <div class="input-grid" style="margin-top:10px">
+      <div class="inp-wrap">
+        <label>Ore supl. 50%</label>
+        <input type="number" id="inp-sup50" value="0" min="0" step="0.1">
+      </div>
+      <div class="inp-wrap">
+        <label>Ore consecutive (z.6-7)</label>
+        <input type="number" id="inp-cons" value="0" min="0" step="0.1">
+      </div>
+    </div>
+  </div>
+
+  <!-- Zile speciale -->
+  <div class="section">
+    <div class="section-title">📅 Zile speciale</div>
+    <div class="input-grid">
+      <div class="inp-wrap">
+        <label>Zile CO (concediu)</label>
+        <input type="number" id="inp-co" value="0" min="0" max="31">
+      </div>
+      <div class="inp-wrap">
+        <label>Ore sărbători legale</label>
+        <input type="number" id="inp-sarb" value="0" min="0" step="0.1">
+      </div>
+    </div>
+    <div class="input-grid" style="margin-top:10px">
+      <div class="inp-wrap">
+        <label>Ore noapte (23-06)</label>
+        <input type="number" id="inp-noapte" value="0" min="0" step="0.1">
+      </div>
+      <div class="inp-wrap">
+        <label>Ore PSI / al. cauze</label>
+        <input type="number" id="inp-psi" value="0" min="0" step="0.1">
+      </div>
+    </div>
+  </div>
+
+  <!-- Optiuni -->
+  <div class="section">
+    <div class="section-title">⚙️ Opțiuni</div>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">🎫 Include tichete de masă</div>
+        <div class="toggle-sub">40 lei × zile lucrate</div>
+      </div>
+      <button class="toggle on" id="tog-tichete" onclick="toggleTichete()"></button>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">🏛️ Deducere personală suplimentară</div>
+        <div class="toggle-sub">100 lei (copii/persoane în întreținere)</div>
+      </div>
+      <button class="toggle on" id="tog-deducere" onclick="toggleDeducere()"></button>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">🤝 Sindicat</div>
+        <div class="toggle-sub">60 lei reținut lunar</div>
+      </div>
+      <button class="toggle on" id="tog-sindicat" onclick="toggleSindicat()"></button>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculeaza()">🧮 Calculează salariul</button>
+
+  <!-- Rezultat -->
+  <div id="result" class="result-hidden">
+
+    <div class="net-card">
+      <div class="net-label">Rest de plată pe card</div>
+      <div class="net-value" id="res-net">0 <span>lei</span></div>
+      <div class="net-sub" id="res-sub">după toate reținuterile</div>
+      <div class="net-toggle-row">
+        <span class="net-badge active" id="badge-fara" onclick="showVariant('fara')">Fără tichete</span>
+        <span class="net-badge" id="badge-cu" onclick="showVariant('cu')">Cu tichete masă</span>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="breakdown-title">📊 Detaliu calcul</div>
+
+      <div class="brow">
+        <span class="brow-label">💼 Munca prestată (ore × tarif)</span>
+        <span class="brow-val green" id="r-munca">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label sub">↳ Tarif orar cu spor</span>
+        <span class="brow-val accent" id="r-tarif">0 lei/h</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">📅 Spor sâmbătă + duminică (100%)</span>
+        <span class="brow-val orange" id="r-sd">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">⏰ Ore suplimentare (100%)</span>
+        <span class="brow-val orange" id="r-sup100">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">⏰ Ore suplimentare (50%)</span>
+        <span class="brow-val orange" id="r-sup50">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">📆 Zile consecutive (z.6-7 × 100%)</span>
+        <span class="brow-val orange" id="r-cons">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">🎉 Sărbători legale (spor)</span>
+        <span class="brow-val yellow" id="r-sarb">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">🌙 Spor noapte (~9%)</span>
+        <span class="brow-val accent" id="r-noapte">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">🦺 Ore PSI / alte cauze</span>
+        <span class="brow-val accent" id="r-psi">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">📋 Spor LPI (per zi lucrată)</span>
+        <span class="brow-val accent" id="r-lpi">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">🏖️ Concediu odihnă</span>
+        <span class="brow-val accent" id="r-co">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">👴 Spor vechime</span>
+        <span class="brow-val purple" id="r-vechime">0 lei</span>
+      </div>
+      <div class="brow total">
+        <span class="brow-label">BRUT TOTAL</span>
+        <span class="brow-val green" id="r-brut">0 lei</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="brow">
+        <span class="brow-label">🏦 CAS 25%</span>
+        <span class="brow-val red" id="r-cas">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">🏥 CASS 10%</span>
+        <span class="brow-val red" id="r-cass">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">💸 Impozit 10%</span>
+        <span class="brow-val red" id="r-impozit">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">🤝 Sindicat</span>
+        <span class="brow-val red" id="r-sindicat">0 lei</span>
+      </div>
+      <div class="brow total">
+        <span class="brow-label">SALARIU NET</span>
+        <span class="brow-val green" id="r-net-total">0 lei</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="brow">
+        <span class="brow-label">🎫 Tichete masă</span>
+        <span class="brow-val yellow" id="r-tichete">0 lei</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">💳 Avans platit</span>
+        <span class="brow-val red" id="r-avans">-2.258 lei</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>⚠️ Estimare orientativă</strong>
+      Calculul este aproximativ. Salariul real poate diferi în funcție de rotunjiri, rețineri specifice, prime sau alte elemente calculate de STB. Sporul de noapte și CASS au o bază de calcul exactă pe care nu o cunoaștem complet.
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Constants from fluturases
+const SAL_ORAR = 35.83;
+const TARIF_MANOPERA_BASE = 48.37; // = SAL_ORAR * (1 + 0.35) roughly - max spor
+const LPI_PER_ZI = 28.66;
+const AVANS = 2258;
+const TICHET_MASA = 40;
+const SINDICAT = 60;
+const TICHETE_SOCIALE = 50; // fix, nu intra in calcul net
+
+let withTichete = true;
+let withDeducere = true;
+let withSindicat = true;
+
+// Variants for toggle
+let varFara = 0, varCu = 0;
+
+function setVechime(v) {
+  document.getElementById('inp-vechime').value = v;
+  document.querySelectorAll('.chip').forEach(c => {
+    c.classList.toggle('active', parseInt(c.textContent) === v);
+  });
+}
+
+function toggleTichete() {
+  withTichete = !withTichete;
+  document.getElementById('tog-tichete').classList.toggle('on', withTichete);
+}
+
+function toggleDeducere() {
+  withDeducere = !withDeducere;
+  document.getElementById('tog-deducere').classList.toggle('on', withDeducere);
+}
+
+function toggleSindicat() {
+  withSindicat = !withSindicat;
+  document.getElementById('tog-sindicat').classList.toggle('on', withSindicat);
+}
+
+function showVariant(v) {
+  document.getElementById('badge-fara').classList.toggle('active', v === 'fara');
+  document.getElementById('badge-cu').classList.toggle('active', v === 'cu');
+  const val = v === 'cu' ? varCu : varFara;
+  document.getElementById('res-net').innerHTML = fmt(val) + ' <span>lei</span>';
+  document.getElementById('res-sub').textContent = v === 'cu'
+    ? 'inclusiv tichete de masă'
+    : 'fără tichete de masă';
+}
+
+function fmt(v) {
+  return Math.round(v).toLocaleString('ro-RO');
+}
+
+function fmtDec(v) {
+  return v.toFixed(2).replace('.', ',');
+}
+
+function calculeaza() {
+  const vechime = parseFloat(document.getElementById('inp-vechime').value) / 100 || 0;
+  const zile = parseFloat(document.getElementById('inp-zile').value) || 0;
+  const ore = parseFloat(document.getElementById('inp-ore').value) || 0;
+  const oreSD = parseFloat(document.getElementById('inp-sd').value) || 0;
+  const oreSup100 = parseFloat(document.getElementById('inp-sup100').value) || 0;
+  const oreSup50 = parseFloat(document.getElementById('inp-sup50').value) || 0;
+  const oreCons = parseFloat(document.getElementById('inp-cons').value) || 0;
+  const zileCO = parseFloat(document.getElementById('inp-co').value) || 0;
+  const oreSarb = parseFloat(document.getElementById('inp-sarb').value) || 0;
+  const oreNoapte = parseFloat(document.getElementById('inp-noapte').value) || 0;
+  const orePSI = parseFloat(document.getElementById('inp-psi').value) || 0;
+
+  // Tarif manopera = SAL_ORAR * (1 + vechime)
+  const tarifManopera = SAL_ORAR * (1 + vechime);
+
+  // 1. Munca prestata = ore * tarif manopera
+  const munca = ore * tarifManopera;
+
+  // 2. Spor S+D = ore S+D * SAL_ORAR (100% in plus)
+  const sporSD = oreSD * SAL_ORAR;
+
+  // 3. Suplimentare 100% si 50%
+  const sporSup100 = oreSup100 * SAL_ORAR;
+  const sporSup50 = oreSup50 * (SAL_ORAR / 2);
+
+  // 4. Zile consecutive (ziua 6 si 7) = ore * SAL_ORAR (platite dublu = 100% in plus)
+  const sporCons = oreCons * SAL_ORAR;
+
+  // 5. Sarbatori legale (Craciun, Revelion, Paste) = ore * SAL_ORAR * 2 (dublu)
+  // Din flutures: 920 C,AN,P la tarif 71.66 = SAL_ORAR * 2 = 35.83 * 2
+  const sporSarb = oreSarb * SAL_ORAR * 2;
+
+  // 6. Spor noapte ~9% (din flutures: 3.10 ore -> 29 lei = 9.35 lei/ora ~ SAL_ORAR * 9%)
+  const sporNoapte = oreNoapte * SAL_ORAR * 0.09;
+
+  // 7. Ore PSI / alte cauze = ore * SAL_ORAR
+  const sporPSI = orePSI * SAL_ORAR;
+
+  // 8. LPI = zile lucrate * 28.66
+  const lpi = zile * LPI_PER_ZI;
+
+  // 9. Concediu odihna = zile CO * (SAL_ORAR * 8) * (1 + vechime)
+  // Din Feb: 10 zile CO -> 4694 lei -> 469.4/zi -> 469.4 / (35.83*8) = 1.636... hmm
+  // Actually: SAL_LUNA / zile_norma_luna * zile_CO
+  // SAL_LUNA=5971, norma=22 zile -> 5971/22*10 = 2714 - not matching 4694
+  // Feb: 4694 / 10 zile = 469.4/zi. 469.4 / (35.83*(1+0.22)) = 469.4/43.71 = 10.74 ore/zi? no
+  // Best estimate: CO se plateste la tariful manopera pe 8 ore/zi
+  // 8 * tarifManopera * zileCO -> Feb: 8 * 35.83 * (1+0.22) * 10 = 8*43.71*10 = 3497 - no
+  // Let's try: medie orara din luna * 8 * zileCO - too complex
+  // From data: 4694 / 10 = 469.4. 469.4 / 8 = 58.67 lei/ora
+  // 58.67 / 35.83 = 1.637. Hm.
+  // Actually CO = sal_lunar_brut_mediu / zile_norma * zile_CO
+  // With a full month brut ~11000, norma 22 zile: 11000/22 = 500/zi
+  // But 4694/10 = 469 ≈ 500 range. Let's use: medie = brut_estimat / zile_norma
+  // For simplicity use: CO ore = zileCO * 8, platite la tarifManopera
+  // This gives: Feb: 10*8*43.71 = 3497 vs 4694 real -> off
+  // Better: use SAL_ORAR only for CO (no extra sporuri in CO calc)
+  // CO=zileCO * 8 * SAL_ORAR... Feb: 10*8*35.83=2866 - still off
+  // The CO value in Feb includes Vecime applied to it too
+  // Best fit: CO = zileCO * (SAL_LUNA_INCADRARE/zile_norma_luna) where norma=22
+  // = zileCO * (5971/22) * (1+vechime) = zileCO * 271.5 * 1.22 = zileCO * 331
+  // Feb: 10 * 331 = 3310 - still not 4694
+  // 
+  // Actually I think CO formula is based on average daily earnings of last 3 months
+  // which we can't easily calculate. Use simplified: CO = zileCO * 8 * tarifManopera * 1.35
+  // approximation based on Feb data: 4694 / (10*8) = 58.67 / 48.37 = 1.213...
+  // Let's use CO = zileCO * 8 * tarifManopera (it includes all sporuri in that month)
+  // Actually best: use the real CO rate which is ~47 lei/ora based on Feb
+  // 4694 / (10*8) = 58.67... 
+  // I'll use: CO = zileCO * 8 * SAL_ORAR * (1 + vechime) * 1.34 factor
+  // Too many unknowns. Use simplest: CO ≈ zileCO * 8 * tarifManopera
+  const co = zileCO * 8 * tarifManopera;
+
+  // 10. Spor vechime = ore_norma * SAL_ORAR * vechime%
+  // Ore norma = zile lucrate * 8 (confirmed from 3 months)
+  const oreNorma = zile * 8;
+  const sporVechime = oreNorma * SAL_ORAR * vechime;
+
+  // BRUT MANOPERA (fara vechime)
+  const brutManopera = munca + sporSD + sporSup100 + sporSup50 + sporCons +
+                       sporSarb + sporNoapte + sporPSI + lpi + co;
+
+  // BRUT TOTAL (cu vechime)
+  const brutTotal = brutManopera + sporVechime;
+
+  // RETINERI
+  // CAS 25% din brut
+  const cas = brutTotal * 0.25;
+
+  // CASS 10% - baza CASS e diferita (include tichete masa in baza in unele cazuri)
+  // Din Jan: brut=11625, tichete=720, CASS baza=12345=11625+720 ✓
+  const ticheteMasa = withTichete ? (zile * TICHET_MASA) : 0;
+  const bazaCASS = brutTotal + ticheteMasa;
+  const cass = bazaCASS * 0.10;
+
+  // VENIT NET = BRUT + tichete - CAS - CASS
+  const venitNet = brutTotal + ticheteMasa - cas - cass;
+
+  // Deduceri pentru impozit
+  const deducereSupl = withDeducere ? 100 : 0;
+  const deducereSindicat = withSindicat ? SINDICAT : 0;
+  const bazaImpozit = venitNet - deducereSupl - deducereSindicat;
+  const impozit = Math.max(0, bazaImpozit * 0.10);
+
+  // Total taxe
+  const totalTaxe = cas + cass + impozit;
+
+  // Salariu NET
+  const salarNet = brutTotal - totalTaxe;
+
+  // Rest de plata fara tichete
+  varFara = salarNet - AVANS - (withSindicat ? SINDICAT : 0);
+  varCu = varFara + ticheteMasa;
+
+  // Update UI
+  document.getElementById('r-munca').textContent = fmt(munca) + ' lei';
+  document.getElementById('r-tarif').textContent = fmtDec(tarifManopera) + ' lei/h';
+  document.getElementById('r-sd').textContent = oreSD > 0 ? fmt(sporSD) + ' lei' : '—';
+  document.getElementById('r-sup100').textContent = oreSup100 > 0 ? fmt(sporSup100) + ' lei' : '—';
+  document.getElementById('r-sup50').textContent = oreSup50 > 0 ? fmt(sporSup50) + ' lei' : '—';
+  document.getElementById('r-cons').textContent = oreCons > 0 ? fmt(sporCons) + ' lei' : '—';
+  document.getElementById('r-sarb').textContent = oreSarb > 0 ? fmt(sporSarb) + ' lei' : '—';
+  document.getElementById('r-noapte').textContent = oreNoapte > 0 ? fmt(sporNoapte) + ' lei' : '—';
+  document.getElementById('r-psi').textContent = orePSI > 0 ? fmt(sporPSI) + ' lei' : '—';
+  document.getElementById('r-lpi').textContent = fmt(lpi) + ' lei';
+  document.getElementById('r-co').textContent = zileCO > 0 ? '~' + fmt(co) + ' lei' : '—';
+  document.getElementById('r-vechime').textContent = fmt(sporVechime) + ' lei';
+  document.getElementById('r-brut').textContent = fmt(brutTotal) + ' lei';
+  document.getElementById('r-cas').textContent = '-' + fmt(cas) + ' lei';
+  document.getElementById('r-cass').textContent = '-' + fmt(cass) + ' lei';
+  document.getElementById('r-impozit').textContent = '-' + fmt(impozit) + ' lei';
+  document.getElementById('r-sindicat').textContent = withSindicat ? '-60 lei' : '—';
+  document.getElementById('r-net-total').textContent = fmt(salarNet) + ' lei';
+  document.getElementById('r-tichete').textContent = ticheteMasa > 0 ? '+' + fmt(ticheteMasa) + ' lei' : '—';
+  document.getElementById('r-avans').textContent = '-2.258 lei';
+
+  // Show result
+  document.getElementById('result').classList.remove('result-hidden');
+  showVariant('fara');
+
+  // Scroll to result
+  setTimeout(() => {
+    document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+}
+</script>
+</body>
+</html>
