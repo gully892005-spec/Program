@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Repartizarea liniilor și turelor pe șoferi — Depoul Dudești">
+<title>Repartizare · Depoul Dudești</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f4; --paper:#fff; --paper2:#f6f8fa; --paper3:#eaeef2;
+  --line:#d6dde4; --line2:#bec8d2; --line3:#9aa8b5;
+  --ink:#16212b; --ink2:#4a5c6b; --ink3:#7e8f9d;
+  --verde:#0d9c78; --verde-b:#e2f5ef; --verde-d:#076a52;
+  --amber:#b8770c; --amber-b:#fdf1dc;
+  --rosu:#c4362f; --rosu-b:#fbe8e6;
+  --albastru:#2668a8; --albastru-b:#e6effa;
+  --mov:#6b46c1; --mov-b:#eee9fb;
+  --f-d:'Bebas Neue',Impact,sans-serif;
+  --f-b:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-m:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:13.5px;line-height:1.45}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.mono{font-family:var(--f-m);font-variant-numeric:tabular-nums}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:#c3ccd5;border-radius:6px;border:3px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ================= schelet ================= */
+.app{display:grid;grid-template-columns:250px 1fr;height:100vh;overflow:hidden}
+aside{background:#132029;color:#dbe6ec;display:flex;flex-direction:column;overflow:hidden}
+.brand{padding:16px 16px 12px;border-bottom:1px solid #24333e}
+.brand h1{font-family:var(--f-d);font-size:27px;letter-spacing:1.2px;margin:0;line-height:1;color:#fff}
+.brand p{margin:3px 0 0;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#7d95a3;font-weight:600}
+.brand .v{float:right;font-family:var(--f-m);font-size:10px;color:#5d7381}
+
+.luna-box{padding:12px 14px;border-bottom:1px solid #24333e}
+.luna-nav{display:flex;align-items:center;gap:6px}
+.luna-nav button{width:28px;height:28px;border-radius:6px;background:#1d2e39;color:#a9bdc9;font-size:15px;line-height:1}
+.luna-nav button:hover{background:#283d4a;color:#fff}
+.luna-nav .lb{flex:1;text-align:center;font-family:var(--f-d);font-size:19px;letter-spacing:.8px;color:#fff;line-height:1.1}
+.luna-info{margin-top:7px;font-size:11px;color:#7d95a3;display:flex;justify-content:space-between}
+.luna-info b{color:#b9cbd6;font-weight:600}
+
+nav{padding:10px 8px;flex:1;overflow:auto}
+.nv{display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border-radius:7px;
+  color:#a9bdc9;font-weight:600;font-size:13.5px;text-align:left;margin-bottom:2px}
+.nv i{font-style:normal;font-size:15px;width:19px;text-align:center;opacity:.85}
+.nv:hover{background:#1d2e39;color:#fff}
+.nv.on{background:var(--verde);color:#fff}
+.nv.on i{opacity:1}
+.nv .cnt{margin-left:auto;font-family:var(--f-m);font-size:10.5px;background:#24333e;color:#94aab8;
+  padding:1px 6px;border-radius:20px}
+.nv.on .cnt{background:rgba(255,255,255,.22);color:#fff}
+
+.side-foot{padding:11px 14px;border-top:1px solid #24333e;font-size:11px;color:#6e8695}
+.side-foot button{color:#a9bdc9;font-size:11.5px;font-weight:600;text-decoration:underline;padding:2px 0}
+.side-foot button:hover{color:#fff}
+.acop{margin:0 14px 12px}
+.acop-bar{height:7px;border-radius:4px;background:#24333e;overflow:hidden}
+.acop-bar i{display:block;height:100%;background:linear-gradient(90deg,#0d9c78,#4fd3ac)}
+.acop-lab{display:flex;justify-content:space-between;font-size:10.5px;color:#7d95a3;margin-bottom:5px;
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+
+main{overflow:auto;padding:0}
+.view{display:none;padding:18px 22px 40px;max-width:1700px}
+.view.on{display:block}
+.vh{display:flex;align-items:flex-end;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.vh h2{font-family:var(--f-d);font-size:26px;letter-spacing:.8px;margin:0;line-height:1}
+.vh p{margin:0;color:var(--ink3);font-size:12.5px;padding-bottom:2px}
+.vh .sp{flex:1}
+
+/* ================= elemente ================= */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:9px;margin-bottom:14px}
+.panel-h{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;
+  font-weight:700;font-size:13px}
+.panel-h .sp{flex:1}
+.panel-b{padding:14px}
+.panel-b.tight{padding:0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--paper);
+  border:1px solid var(--line2);border-radius:7px;padding:7px 13px;font-weight:600;font-size:13px;color:var(--ink)}
+.btn:hover{background:var(--paper2);border-color:var(--line3)}
+.btn.pri{background:var(--verde);border-color:var(--verde-d);color:#fff}
+.btn.pri:hover{background:#0b8a6a}
+.btn.dgr{color:var(--rosu);border-color:#e3b8b4}
+.btn.dgr:hover{background:var(--rosu-b)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn.big{padding:11px 20px;font-size:14.5px}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+
+label.f{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);
+  font-weight:700;margin:0 0 5px}
+.fld{margin-bottom:13px}
+input,select,textarea{background:var(--paper);border:1px solid var(--line2);border-radius:6px;
+  padding:6px 8px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--verde);box-shadow:0 0 0 3px var(--verde-b)}
+input[type=checkbox]{width:auto}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:7px;overflow:hidden;background:var(--paper)}
+.seg button{padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--paper2)}
+.seg button.on{background:var(--verde);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line2);background:var(--paper);border-radius:20px;padding:4px 11px;
+  font-size:12.5px;font-weight:600;color:var(--ink2)}
+.chip:hover{border-color:var(--line3)}
+.chip.on{background:var(--verde-b);border-color:var(--verde);color:var(--verde-d)}
+.chip.no{background:var(--rosu-b);border-color:var(--rosu);color:var(--rosu)}
+
+/* ================= tabele ================= */
+table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+table.t th{position:sticky;top:0;z-index:2;background:var(--paper2);text-align:left;font-size:10.5px;
+  text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:700;
+  padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.t td{padding:5px 10px;border-bottom:1px solid var(--line)}
+table.t tbody tr:hover td{background:var(--paper2)}
+table.t tbody tr.off td{opacity:.42}
+table.t td.c,table.t th.c{text-align:center}
+table.t select,table.t input{padding:3px 6px;font-size:12.5px}
+.tw{max-height:calc(100vh - 240px);overflow:auto;border-radius:0 0 9px 9px}
+.nrb{font-family:var(--f-m);font-size:12px;color:var(--verde-d);background:var(--verde-b);
+  border-radius:4px;padding:2px 6px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 6px;
+  background:var(--paper3);color:var(--ink2);margin:1px 3px 1px 0;white-space:nowrap}
+.tag.v{background:var(--verde-b);color:var(--verde-d)}
+.tag.a{background:var(--amber-b);color:var(--amber)}
+.tag.r{background:var(--rosu-b);color:var(--rosu)}
+.tag.b{background:var(--albastru-b);color:var(--albastru)}
+.tag.m{background:var(--mov-b);color:var(--mov)}
+.mut{color:var(--ink3)}
+.hint{color:var(--ink3);font-size:12px;line-height:1.55}
+
+/* ================= matricea lunii (element-semnătură) ================= */
+.mx-wrap{overflow:auto;max-height:calc(100vh - 210px);border-radius:0 0 9px 9px}
+table.mx{border-collapse:separate;border-spacing:0;font-size:11px}
+table.mx th,table.mx td{border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+table.mx thead th{position:sticky;top:0;z-index:3;background:var(--paper2);padding:0;height:42px;
+  min-width:46px;width:46px;vertical-align:bottom}
+table.mx thead th .zi{font-family:var(--f-m);font-size:11px;color:var(--ink2);line-height:1.2;padding:2px 0 4px}
+table.mx thead th .zw{font-size:9px;text-transform:uppercase;color:var(--ink3);letter-spacing:.06em}
+table.mx thead th.we{background:#f0ece2}
+table.mx thead th.we .zw{color:var(--amber)}
+.rail{height:5px;background:var(--rosu);margin:0}
+.rail i{display:block;height:100%;background:var(--verde)}
+table.mx th.nm,table.mx td.nm{position:sticky;left:0;z-index:2;background:var(--paper);text-align:left;
+  padding:4px 9px;min-width:210px;width:210px;border-right:1px solid var(--line2)}
+table.mx thead th.nm{z-index:4;background:var(--paper2);vertical-align:middle}
+table.mx td.nm b{font-weight:600;font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.mx td.nm span{font-family:var(--f-m);font-size:10px;color:var(--ink3)}
+table.mx tbody tr:hover td{background:var(--paper2)}
+table.mx tbody tr:hover td.nm{background:var(--paper3)}
+.cl{display:block;width:100%;height:26px;line-height:26px;text-align:center;font-family:var(--f-m);
+  font-size:10.5px;color:var(--ink3);cursor:pointer}
+.cl:hover{outline:2px solid var(--verde);outline-offset:-2px}
+.cl.s1{background:var(--albastru-b);color:var(--albastru);font-weight:600}
+.cl.s2{background:var(--mov-b);color:var(--mov);font-weight:600}
+.cl.co{background:var(--amber-b);color:var(--amber);font-weight:700}
+.cl.cm{background:var(--rosu-b);color:var(--rosu);font-weight:700}
+.cl.rz{background:#e7edf1;color:#4a5c6b;font-weight:700}
+.cl.we{background:#f7f4ed}
+.cl.s1.we{background:#dfe9f6}.cl.s2.we{background:#e9e3f7}
+.tot{background:var(--paper2);font-family:var(--f-m);font-size:11px;text-align:center;
+  min-width:56px;position:sticky;right:0;z-index:2;border-left:1px solid var(--line2)}
+
+/* ================= program pe zi ================= */
+.zi-lay{display:grid;grid-template-columns:268px 1fr;gap:14px;align-items:start}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal .dw{text-align:center;font-size:10px;color:var(--ink3);font-weight:700;text-transform:uppercase;padding:3px 0}
+.cd{border:1px solid var(--line);border-radius:6px;background:var(--paper);padding:4px 0 3px;text-align:center;
+  position:relative}
+.cd:hover{border-color:var(--verde)}
+.cd.on{background:var(--verde);border-color:var(--verde-d);color:#fff}
+.cd.we{background:var(--paper3)}
+.cd.on.we{background:var(--verde)}
+.cd .d{font-family:var(--f-m);font-size:13px;line-height:1.1}
+.cd .b{height:3px;border-radius:2px;margin:3px 5px 0;background:var(--rosu)}
+.cd .b.ok{background:var(--verde)}.cd .b.p{background:var(--amber)}
+.cd.on .b{background:rgba(255,255,255,.75)}
+.cd.gol{opacity:0;pointer-events:none}
+.p-gol td{background:var(--rosu-b)!important}
+.sch1{color:var(--albastru);font-weight:700}
+.sch2{color:var(--mov);font-weight:700}
+
+/* ================= stat ================= */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.st{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+.st b{display:block;font-family:var(--f-d);font-size:31px;line-height:1;letter-spacing:.5px}
+.st span{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:700}
+.st.ok b{color:var(--verde)}.st.warn b{color:var(--amber)}.st.bad b{color:var(--rosu)}
+.note{border-left:3px solid var(--line2);padding:9px 12px;background:var(--paper2);border-radius:0 7px 7px 0;font-size:12.5px}
+.note.ok{border-color:var(--verde);background:var(--verde-b)}
+.note.warn{border-color:var(--amber);background:var(--amber-b)}
+.note.bad{border-color:var(--rosu);background:var(--rosu-b)}
+
+/* ================= sugestii ================= */
+.sg{border:1px solid var(--line);border-radius:9px;background:var(--paper);padding:11px 13px;margin-bottom:9px}
+.sg:hover{border-color:var(--line3)}
+.sg-h{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.sg-r{font-family:var(--f-d);font-size:20px;color:var(--verde);min-width:20px}
+.sg-h b{font-size:14px}
+.sg-h .sp{flex:1}
+.sg-l{font-size:12.5px;color:var(--ink2);padding:2px 0}
+.sg-l b{color:var(--ink)}
+.pill{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;background:var(--verde-b);color:var(--verde-d)}
+.pill.m{background:var(--amber-b);color:var(--amber)}
+
+/* ================= dialog ================= */
+.ov{position:fixed;inset:0;z-index:100;background:rgba(18,28,36,.45);display:none;
+  align-items:center;justify-content:center;padding:24px}
+.ov.on{display:flex}
+.dlg{background:var(--paper);border-radius:11px;width:100%;max-width:620px;max-height:88vh;overflow:auto;
+  box-shadow:0 22px 60px rgba(10,20,28,.3)}
+.dlg-h{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--line);
+  padding:13px 16px;display:flex;align-items:center;gap:10px;z-index:2}
+.dlg-h h3{font-family:var(--f-d);font-size:21px;margin:0;letter-spacing:.6px;flex:1}
+.dlg-b{padding:16px}
+.x{width:28px;height:28px;border-radius:6px;color:var(--ink3);font-size:16px}
+.x:hover{background:var(--paper3);color:var(--ink)}
+.lst{border:1px solid var(--line);border-radius:7px;max-height:270px;overflow:auto}
+.lst div.it{padding:6px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-size:12.5px}
+.lst div.it:last-child{border-bottom:0}
+.lst div.it.pick{cursor:pointer}
+.lst div.it.pick:hover{background:var(--verde-b)}
+.lst div.it .sp{flex:1}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;background:#132029;
+  color:#fff;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;opacity:0;
+  pointer-events:none;transition:opacity .2s;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast.on{opacity:1}
+
+@media(max-width:900px){
+  .app{grid-template-columns:1fr;height:auto}
+  aside{position:sticky;top:0;z-index:50}
+  nav{display:flex;overflow-x:auto;padding:8px}
+  .nv{width:auto;white-space:nowrap}
+  .acop,.side-foot{display:none}
+  .zi-lay{grid-template-columns:1fr}
+  .view{padding:14px}
+  main{overflow:visible}
+}
+.print-only{display:none}
+@media print{
+  aside,.vh,.panel-h,.no-print{display:none!important}
+  .print-only{display:block;font-family:var(--f-d);font-size:16px;margin-bottom:6px}
+  .app{display:block;height:auto}
+  main{overflow:visible}
+  .view{padding:0;max-width:none}
+  .mx-wrap,.tw{max-height:none;overflow:visible}
+  body{background:#fff;font-size:9px}
+  table.mx thead th{min-width:0;width:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <span class="v" id="ver"></span>
+    <h1>REPARTIZARE</h1>
+    <p>Depoul Dudești</p>
+  </div>
+  <div class="luna-box">
+    <div class="luna-nav">
+      <button onclick="schimbaLuna(-1)" title="Luna precedentă">‹</button>
+      <div class="lb" id="luna-nume">—</div>
+      <button onclick="schimbaLuna(1)" title="Luna următoare">›</button>
+    </div>
+    <div class="luna-info" id="luna-info"></div>
+  </div>
+  <nav>
+    <button class="nv on" id="n-soferi" onclick="tab('soferi')"><i>👥</i>Șoferi<span class="cnt" id="c-soferi">0</span></button>
+    <button class="nv" id="n-program" onclick="tab('program')"><i>📋</i>Program</button>
+    <button class="nv" id="n-gen" onclick="tab('gen')"><i>⚡</i>Generare</button>
+    <button class="nv" id="n-schimb" onclick="tab('schimb')"><i>🔄</i>Schimburi</button>
+    <button class="nv" id="n-ture" onclick="tab('ture')"><i>🚋</i>Linii și ture<span class="cnt" id="c-ture">0</span></button>
+  </nav>
+  <div class="acop">
+    <div class="acop-lab"><span>Acoperire lună</span><span id="acop-pct">—</span></div>
+    <div class="acop-bar"><i id="acop-i" style="width:0"></i></div>
+  </div>
+  <div class="side-foot">
+    Datele se țin în acest calculator.<br>
+    <button onclick="salveazaTot()">Salvează copie</button> ·
+    <button onclick="incarcaTot()">Încarcă copie</button>
+  </div>
+</aside>
+
+<main>
+<!-- ============ ȘOFERI ============ -->
+<section class="view on" id="v-soferi">
+  <div class="vh">
+    <h2>Șoferi</h2><p id="s-sumar"></p><div class="sp"></div>
+    <input id="cauta" placeholder="Caută nume sau număr…" style="width:220px" oninput="deseneazaSoferi()">
+    <div class="seg">
+      <button id="fs-toti" class="on" onclick="filtruSoferi('toti')">Toți</button>
+      <button id="fs-activi" onclick="filtruSoferi('activi')">Activi</button>
+      <button id="fs-restr" onclick="filtruSoferi('restr')">Cu restricții</button>
+      <button id="fs-abs" onclick="filtruSoferi('abs')">În CO/CM</button>
+    </div>
+    <button class="btn" onclick="adaugaSofer()">+ Adaugă</button>
+  </div>
+  <div class="panel">
+    <div class="panel-h">Lista de personal<span class="sp"></span>
+      <span class="hint">Modifici direct în tabel. Liniile și absențele se deschid din butoanele din dreapta.</span></div>
+    <div class="tw"><table class="t" id="tb-soferi"></table></div>
+  </div>
+</section>
+
+<!-- ============ PROGRAM ============ -->
+<section class="view" id="v-program">
+  <div class="vh">
+    <h2>Program</h2><p id="p-sumar"></p><div class="sp"></div>
+    <div class="seg">
+      <button id="pm-luna" class="on" onclick="modProgram('luna')">Toată luna</button>
+      <button id="pm-zi" onclick="modProgram('zi')">Pe zi</button>
+    </div>
+    <button class="btn" onclick="exportMatrice()">CSV lună</button>
+    <button class="btn" onclick="exportZile()">CSV zilnic</button>
+    <button class="btn" onclick="window.print()">Tipărește</button>
+  </div>
+
+  <div id="prog-luna">
+    <div class="print-only" id="print-tit"></div>
+    <div class="panel">
+      <div class="panel-h">Repartizarea lunii<span class="sp"></span>
+        <input id="cauta2" placeholder="Filtrează șofer…" style="width:190px" oninput="deseneazaMatrice()">
+        <span class="tag b">Schimb 1</span><span class="tag m">Schimb 2</span>
+        <span class="tag a">CO</span><span class="tag r">CM</span></div>
+      <div class="mx-wrap" id="mx-wrap"></div>
+    </div>
+  </div>
+
+  <div id="prog-zi" style="display:none">
+    <div class="zi-lay">
+      <div class="panel">
+        <div class="panel-h">Alege ziua</div>
+        <div class="panel-b"><div class="cal" id="cal"></div>
+          <p class="hint" style="margin:10px 0 0">Bara de sub zi arată cât e acoperit din ziua respectivă.</p></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h" id="zi-cap">—</div>
+        <div style="padding:9px 14px;border-bottom:1px solid var(--line)"><div class="seg">
+          <button id="zm-post" class="on" onclick="modZi('post')">Pe posturi</button>
+          <button id="zm-sofer" onclick="modZi('sofer')">Foaia zilnică</button></div></div>
+        <div class="tw" style="max-height:calc(100vh - 250px)"><table class="t" id="tb-posturi"></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GENERARE ============ -->
+<section class="view" id="v-gen">
+  <div class="vh"><h2>Generare</h2><p>Programul se face pe luna afișată în stânga.</p></div>
+  <div class="stats" id="gen-stat" style="margin-bottom:14px"></div>
+  <div id="gen-balanta" style="margin-bottom:14px"></div>
+  <div class="grid2">
+    <div class="panel"><div class="panel-h">Reguli</div><div class="panel-b">
+      <div class="fld"><label class="f">Repaus minim între două ture</label>
+        <div class="seg" id="sg-repaus">
+          <button data-v="600" onclick="setSet('repaus',600)">10 h</button>
+          <button data-v="720" onclick="setSet('repaus',720)">12 h</button>
+          <button data-v="840" onclick="setSet('repaus',840)">14 h</button></div></div>
+      <div class="fld"><label class="f">Cât ține omul același grafic</label>
+        <div class="seg" id="sg-cont">
+          <button data-v="0" onclick="setSet('cont',0)">Deloc</button>
+          <button data-v="1" onclick="setSet('cont',1)">Echilibrat</button>
+          <button data-v="2" onclick="setSet('cont',2)">Cât se poate</button></div></div>
+      <div class="fld"><label class="f">Zile libere după seria completă</label>
+        <div class="seg" id="sg-lib">
+          <button data-v="1" onclick="setSet('libere',1)">1 zi</button>
+          <button data-v="2" onclick="setSet('libere',2)">2 zile</button></div></div>
+      <div class="fld"><label class="f">Completarea până la normă</label>
+        <div class="seg" id="sg-rez">
+          <button data-v="1" onclick="setSet('rezerva',1)">Cu rezervă (R)</button>
+          <button data-v="0" onclick="setSet('rezerva',0)">Doar ture</button></div></div>
+      <div class="fld" style="margin-bottom:0"><label class="f">Peste ce se generează</label>
+        <div class="seg" id="sg-pastr">
+          <button data-v="0" onclick="setSet('pastreaza',0)">Șterge tot</button>
+          <button data-v="1" onclick="setSet('pastreaza',1)">Păstrează ce am pus manual</button></div></div>
+    </div></div>
+    <div class="panel"><div class="panel-h">Pornește</div><div class="panel-b">
+      <button class="btn pri big" style="width:100%" onclick="genereaza()">⚡ Generează programul lunii</button>
+      <p class="hint" style="margin:11px 0 0">Ține cont de CO și CM, zile consecutive, weekend, zile libere fixe,
+      liniile permise sau interzise, schimbul fiecăruia și repausul între ture. Ce nu se poate acoperi
+      apare mai jos cu motivul.</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn dgr sm" onclick="stergeLuna()">Șterge programul lunii</button>
+      </div>
+    </div></div>
+  </div>
+  <div id="gen-raport"></div>
+</section>
+
+<!-- ============ SCHIMBURI ============ -->
+<section class="view" id="v-schimb">
+  <div class="vh"><h2>Schimburi</h2><p>Cauți varianta care mișcă cel mai puțin programul celorlalți.</p><div class="sp"></div>
+    <div class="seg">
+      <button id="sm-liber" class="on" onclick="modSchimb('liber')">Cere liber</button>
+      <button id="sm-tura" onclick="modSchimb('tura')">Schimb de tură</button></div>
+  </div>
+
+  <div id="sc-liber" class="zi-lay" style="grid-template-columns:320px 1fr">
+    <div class="panel"><div class="panel-h">Cine cere liber</div><div class="panel-b">
+      <div class="fld"><label class="f">Șofer</label><select id="lb-sofer"></select></div>
+      <div class="fld"><label class="f">Ziua</label><select id="lb-zi"></select></div>
+      <button class="btn pri" style="width:100%" onclick="cautaLiber()">Caută variante</button>
+    </div></div>
+    <div id="lb-rez"></div>
+  </div>
+
+  <div id="sc-tura" class="zi-lay" style="grid-template-columns:320px 1fr;display:none">
+    <div class="panel"><div class="panel-h">Doi colegi</div><div class="panel-b">
+      <div class="fld"><label class="f">Ziua</label><select id="sw-zi" onchange="umpleSwSoferi()"></select></div>
+      <div class="fld"><label class="f">Primul coleg</label><select id="sw-a" onchange="verificaSchimb()"></select></div>
+      <div class="fld"><label class="f">Al doilea coleg</label><select id="sw-b" onchange="verificaSchimb()"></select></div>
+      <div id="sw-rez"></div>
+    </div></div>
+    <div id="sw-alt"></div>
+  </div>
+</section>
+
+<!-- ============ TURE ============ -->
+<section class="view" id="v-ture">
+  <div class="vh"><h2>Linii și ture</h2><p id="t-sumar"></p><div class="sp"></div>
+    <div class="seg">
+      <button id="tm-zl" class="on" onclick="modTure('zl')">Zi lucrătoare</button>
+      <button id="tm-we" onclick="modTure('we')">Weekend și sărbători</button></div>
+    <button class="btn" onclick="adaugaTura()">+ Adaugă tură</button>
+    <button class="btn" onclick="incarcaDbManual()">Încarcă db.json</button>
+  </div>
+  <div class="note" style="margin-bottom:14px" id="t-valabil"></div>
+  <div class="panel">
+    <div class="panel-h">Turele depoului<span class="sp"></span>
+      <button class="btn sm dgr" onclick="resetTure()">Revino la turele din aplicație</button></div>
+    <div class="tw"><table class="t" id="tb-ture"></table></div>
+  </div>
+</section>
+</main>
+</div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)inchide()"><div class="dlg" id="dlg"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+/* =========================================================================
+   REPARTIZARE · Depoul Dudești — program de birou pentru repartizor
+   Aplicație de sine stătătoare: turele sunt încorporate în fișier,
+   nu depinde de nicio altă aplicație și merge fără internet.
+   ========================================================================= */
+const APP_V='1.4';
+const SARB={"2026-1-1": "Anul Nou", "2026-1-2": "Anul Nou", "2026-1-6": "Boboteaza", "2026-1-7": "Sf. Ioan Botezătorul", "2026-1-24": "Unirea Principatelor", "2026-4-10": "Vinerea Mare", "2026-4-12": "Paște", "2026-4-13": "Paște", "2026-5-1": "Ziua Muncii", "2026-5-31": "Rusalii", "2026-6-1": "Ziua Copilului · Rusalii", "2026-8-15": "Sf. Maria", "2026-11-30": "Sf. Andrei", "2026-12-1": "Ziua Națională", "2026-12-25": "Crăciun", "2026-12-26": "Crăciun", "2027-1-1": "Anul Nou", "2027-1-2": "Anul Nou", "2027-1-6": "Boboteaza", "2027-1-7": "Sf. Ioan Botezătorul", "2027-1-24": "Unirea Principatelor", "2027-4-30": "Vinerea Mare", "2027-5-1": "Ziua Muncii", "2027-5-2": "Paște", "2027-5-3": "Paște", "2027-6-1": "Ziua Copilului", "2027-6-20": "Rusalii", "2027-6-21": "Rusalii", "2027-8-15": "Sf. Maria", "2027-11-30": "Sf. Andrei", "2027-12-1": "Ziua Națională", "2027-12-25": "Crăciun", "2027-12-26": "Crăciun", "2028-1-1": "Anul Nou", "2028-1-2": "Anul Nou", "2028-1-6": "Boboteaza", "2028-1-7": "Sf. Ioan Botezătorul", "2028-1-24": "Unirea Principatelor", "2028-4-14": "Vinerea Mare", "2028-4-16": "Paște", "2028-4-17": "Paște", "2028-5-1": "Ziua Muncii", "2028-6-1": "Ziua Copilului", "2028-6-4": "Rusalii", "2028-6-5": "Rusalii", "2028-8-15": "Sf. Maria", "2028-11-30": "Sf. Andrei", "2028-12-1": "Ziua Națională", "2028-12-25": "Crăciun", "2028-12-26": "Crăciun", "2029-1-1": "Anul Nou", "2029-1-2": "Anul Nou", "2029-1-6": "Boboteaza", "2029-1-7": "Sf. Ioan Botezătorul", "2029-1-24": "Unirea Principatelor", "2029-4-6": "Vinerea Mare", "2029-4-8": "Paște", "2029-4-9": "Paște", "2029-5-1": "Ziua Muncii", "2029-5-27": "Rusalii", "2029-5-28": "Rusalii", "2029-6-1": "Ziua Copilului", "2029-8-15": "Sf. Maria", "2029-11-30": "Sf. Andrei", "2029-12-1": "Ziua Națională", "2029-12-25": "Crăciun", "2029-12-26": "Crăciun", "2030-1-1": "Anul Nou", "2030-1-2": "Anul Nou", "2030-1-6": "Boboteaza", "2030-1-7": "Sf. Ioan Botezătorul", "2030-1-24": "Unirea Principatelor", "2030-4-26": "Vinerea Mare", "2030-4-28": "Paște", "2030-4-29": "Paște", "2030-5-1": "Ziua Muncii", "2030-6-1": "Ziua Copilului", "2030-6-16": "Rusalii", "2030-6-17": "Rusalii", "2030-8-15": "Sf. Maria", "2030-11-30": "Sf. Andrei", "2030-12-1": "Ziua Națională", "2030-12-25": "Crăciun", "2030-12-26": "Crăciun", "2031-1-1": "Anul Nou", "2031-1-2": "Anul Nou", "2031-1-6": "Boboteaza", "2031-1-7": "Sf. Ioan Botezătorul", "2031-1-24": "Unirea Principatelor", "2031-4-11": "Vinerea Mare", "2031-4-13": "Paște", "2031-4-14": "Paște", "2031-5-1": "Ziua Muncii", "2031-6-1": "Ziua Copilului · Rusalii", "2031-6-2": "Rusalii", "2031-8-15": "Sf. Maria", "2031-11-30": "Sf. Andrei", "2031-12-1": "Ziua Națională", "2031-12-25": "Crăciun", "2031-12-26": "Crăciun", "2032-1-1": "Anul Nou", "2032-1-2": "Anul Nou", "2032-1-6": "Boboteaza", "2032-1-7": "Sf. Ioan Botezătorul", "2032-1-24": "Unirea Principatelor", "2032-4-30": "Vinerea Mare", "2032-5-1": "Ziua Muncii", "2032-5-2": "Paște", "2032-5-3": "Paște", "2032-6-1": "Ziua Copilului", "2032-6-20": "Rusalii", "2032-6-21": "Rusalii", "2032-8-15": "Sf. Maria", "2032-11-30": "Sf. Andrei", "2032-12-1": "Ziua Națională", "2032-12-25": "Crăciun", "2032-12-26": "Crăciun", "2033-1-1": "Anul Nou", "2033-1-2": "Anul Nou", "2033-1-6": "Boboteaza", "2033-1-7": "Sf. Ioan Botezătorul", "2033-1-24": "Unirea Principatelor", "2033-4-22": "Vinerea Mare", "2033-4-24": "Paște", "2033-4-25": "Paște", "2033-5-1": "Ziua Muncii", "2033-6-1": "Ziua Copilului", "2033-6-12": "Rusalii", "2033-6-13": "Rusalii", "2033-8-15": "Sf. Maria", "2033-11-30": "Sf. Andrei", "2033-12-1": "Ziua Națională", "2033-12-25": "Crăciun", "2033-12-26": "Crăciun", "2034-1-1": "Anul Nou", "2034-1-2": "Anul Nou", "2034-1-6": "Boboteaza", "2034-1-7": "Sf. Ioan Botezătorul", "2034-1-24": "Unirea Principatelor", "2034-4-7": "Vinerea Mare", "2034-4-9": "Paște", "2034-4-10": "Paște", "2034-5-1": "Ziua Muncii", "2034-5-28": "Rusalii", "2034-5-29": "Rusalii", "2034-6-1": "Ziua Copilului", "2034-8-15": "Sf. Maria", "2034-11-30": "Sf. Andrei", "2034-12-1": "Ziua Națională", "2034-12-25": "Crăciun", "2034-12-26": "Crăciun", "2035-1-1": "Anul Nou", "2035-1-2": "Anul Nou", "2035-1-6": "Boboteaza", "2035-1-7": "Sf. Ioan Botezătorul", "2035-1-24": "Unirea Principatelor", "2035-4-27": "Vinerea Mare", "2035-4-29": "Paște", "2035-4-30": "Paște", "2035-5-1": "Ziua Muncii", "2035-6-1": "Ziua Copilului", "2035-6-17": "Rusalii", "2035-6-18": "Rusalii", "2035-8-15": "Sf. Maria", "2035-11-30": "Sf. Andrei", "2035-12-1": "Ziua Națională", "2035-12-25": "Crăciun", "2035-12-26": "Crăciun", "2036-1-1": "Anul Nou", "2036-1-2": "Anul Nou", "2036-1-6": "Boboteaza", "2036-1-7": "Sf. Ioan Botezătorul", "2036-1-24": "Unirea Principatelor", "2036-4-18": "Vinerea Mare", "2036-4-20": "Paște", "2036-4-21": "Paște", "2036-5-1": "Ziua Muncii", "2036-6-1": "Ziua Copilului", "2036-6-8": "Rusalii", "2036-6-9": "Rusalii", "2036-8-15": "Sf. Maria", "2036-11-30": "Sf. Andrei", "2036-12-1": "Ziua Națională", "2036-12-25": "Crăciun", "2036-12-26": "Crăciun"};
+const SOFERI_BAZA=[{"nr": "24161", "nume": "Anghel Robert Daniel"}, {"nr": "91444", "nume": "Anica Dinu Elena"}, {"nr": "25263", "nume": "Antonache Marian"}, {"nr": "97185", "nume": "Apostol Ioan Robert"}, {"nr": "13605", "nume": "Bercaru Marius"}, {"nr": "10200", "nume": "Birdeanu Alexandru Bogdan"}, {"nr": "11070", "nume": "Birea Ionel"}, {"nr": "70348", "nume": "Bizic Sandel"}, {"nr": "90722", "nume": "Bogatu Valentina"}, {"nr": "11470", "nume": "Braiculescu George"}, {"nr": "12120", "nume": "Bucur Florin"}, {"nr": "11513", "nume": "Budeanu Bogdan"}, {"nr": "10670", "nume": "Budeanu Catalin Alexandru"}, {"nr": "82594", "nume": "Buimaga Mihai Claudiu"}, {"nr": "10199", "nume": "Burciu Cristian Paul"}, {"nr": "11939", "nume": "Calin Marin"}, {"nr": "11956", "nume": "Caramfir Vasilica"}, {"nr": "11224", "nume": "Ciobota Costel"}, {"nr": "10851", "nume": "Dina Ilie"}, {"nr": "10790", "nume": "Dobre Marius Valentin"}, {"nr": "25937", "nume": "Dobre Teohari Daniel"}, {"nr": "10582", "nume": "Dragan Valentin"}, {"nr": "24830", "nume": "Dumitru Florian"}, {"nr": "10314", "nume": "Dumitru Lilian"}, {"nr": "12091", "nume": "Dumitru Marian"}, {"nr": "10072", "nume": "Eftenie Gheorghe"}, {"nr": "43631", "nume": "Enache Didina Mihaela"}, {"nr": "10719", "nume": "Florea Cornel"}, {"nr": "10215", "nume": "Florea Cristian Ninel"}, {"nr": "11041", "nume": "Gangu Damian"}, {"nr": "11252", "nume": "Gheorghe Cristinel"}, {"nr": "11517", "nume": "Gheorghiu Cristian"}, {"nr": "10170", "nume": "Ghita Elvis Gigel"}, {"nr": "4061", "nume": "Ghiurca Cristina"}, {"nr": "11505", "nume": "Grasu Lucian"}, {"nr": "11460", "nume": "Herea Ionut Lucian"}, {"nr": "11795", "nume": "Iacob Cristian"}, {"nr": "11183", "nume": "Iftime Mihai"}, {"nr": "10745", "nume": "Ion Marian"}, {"nr": "10119", "nume": "Iosif Lucian Mihai"}, {"nr": "11916", "nume": "Ivascu Sorin Costin"}, {"nr": "12004", "nume": "Jalea Aurel"}, {"nr": "11830", "nume": "Mandita Valentin Ionut"}, {"nr": "6560", "nume": "Manea Iulian"}, {"nr": "90808", "nume": "Marculescu Relu Lilian"}, {"nr": "70589", "nume": "Marcuti Mircea"}, {"nr": "12161", "nume": "Mihai Dragos"}, {"nr": "10009", "nume": "Mihalache Dragos"}, {"nr": "11511", "nume": "Mirsanu Florin Ionut"}, {"nr": "10037", "nume": "Mitrica Ion"}, {"nr": "10353", "nume": "Movileanu Mihaela"}, {"nr": "24295", "nume": "Musat Florin Paul"}, {"nr": "12070", "nume": "Nastase Mirel"}, {"nr": "10890", "nume": "Neagoe Andrei Gabriel"}, {"nr": "26743", "nume": "Nedea Iulian"}, {"nr": "10016", "nume": "Nicula Angel"}, {"nr": "90230", "nume": "Niculae Viorica"}, {"nr": "10680", "nume": "Nita George"}, {"nr": "10892", "nume": "Obrijanu Adrian"}, {"nr": "35267", "nume": "Oncioiu Ciprian Gabriel"}, {"nr": "10132", "nume": "Pana Vasile"}, {"nr": "10547", "nume": "Panciu Petre"}, {"nr": "10551", "nume": "Petre Florian"}, {"nr": "10205", "nume": "Pirvu Gabriel"}, {"nr": "10780", "nume": "Poncea Dan Cosmin"}, {"nr": "11961", "nume": "Popa Danut"}, {"nr": "10201", "nume": "Popescu Adrian"}, {"nr": "10800", "nume": "Pruna Ciprian Constantin"}, {"nr": "24919", "nume": "Ristea Cristian"}, {"nr": "11377", "nume": "Saghin Constanta Daniela"}, {"nr": "11380", "nume": "Saghin Constantin"}, {"nr": "10810", "nume": "Sanducu Liviu Nicolae"}, {"nr": "11983", "nume": "Scarlat Constantin"}, {"nr": "90674", "nume": "Serban Marian"}, {"nr": "86501", "nume": "Spataru Filip Daniel"}, {"nr": "10204", "nume": "Stan Aurel"}, {"nr": "13485", "nume": "Stefan Alexandru"}, {"nr": "3021", "nume": "Stirbu Maria Florentina"}, {"nr": "10502", "nume": "Stoian Stefan"}, {"nr": "76624", "nume": "Tesa Gabriel"}, {"nr": "90434", "nume": "Tiganila Cristian Marius"}, {"nr": "90343", "nume": "Toma Viorel"}, {"nr": "10665", "nume": "Udrea Razvan Ionut"}, {"nr": "91118", "nume": "Viciu Catalin"}, {"nr": "9194", "nume": "Zamfir Costel"}, {"nr": "6271", "nume": "Zamfirescu Iuliana"}];
+const DB_BAZA={"_valabilDin": "2026-08-12", "zl": {"1/5": {"linie": "5", "s1": {"i": "06:21", "r": "13:32", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "13:32", "r": "22:23", "d": false}}, "5/5": {"linie": "5", "s1": {"i": "04:41", "r": "12:09", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "15:55", "r": "22:47", "d": true}}, "7/5": {"linie": "5", "s1": {"i": "04:51", "r": "11:55", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "11:55", "r": "20:47", "d": false}}, "16/5": {"linie": "5", "s1": {"i": "05:47", "r": "13:17", "c": "Pantelimon"}, "s2": {"c": "Aeroport Băneasa", "i": "15:44", "r": "23:45", "d": true}}, "18/5": {"linie": "5", "s1": {"i": "04:39", "r": "12:38", "c": "Aeroport Băneasa"}, "s2": {"c": "Aeroport Băneasa", "i": "15:54", "r": "00:00", "d": true}}, "2/7": {"linie": "7", "s1": {"i": "06:20", "r": "14:18", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "14:18", "r": "23:15", "d": false}}, "3/7": {"linie": "7", "s1": {"i": "06:02", "r": "13:48", "c": "CFR Progresul", "dep": "Giurgiu"}, "s2": {"c": "CFR Progresul", "i": "13:48", "r": "19:04", "d": false}}, "4/7": {"linie": "7", "s1": {"i": "04:17", "r": "11:05", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "15:29", "r": "23:30", "d": true}}, "5/7": {"linie": "7", "s1": {"i": "06:39", "r": "14:36", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "14:36", "r": "21:30", "d": false}}, "6/7": {"linie": "7", "s1": {"i": "06:22", "r": "14:06", "c": "CFR Progresul", "dep": "Giurgiu"}, "s2": {"c": "CFR Progresul", "i": "14:06", "r": "19:27", "d": false}}, "7/7": {"linie": "7", "s1": {"i": "04:34", "r": "11:23", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "15:50", "r": "23:45", "d": true}}, "8/7": {"linie": "7", "s1": {"i": "07:00", "r": "14:55", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "14:55", "r": "21:48", "d": false}}, "9/7": {"linie": "7", "s1": {"i": "05:50", "r": "13:49", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "13:49", "r": "19:24", "d": false}}, "10/7": {"linie": "7", "s1": {"i": "04:50", "r": "11:43", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "14:54", "r": "23:00", "d": true}}, "11/7": {"linie": "7", "s1": {"i": "06:07", "r": "13:58", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "13:58", "r": "20:57", "d": false}}, "4/10": {"linie": "10", "s1": {"i": "05:31", "r": "11:26", "c": "Romprim"}, "s2": {"c": "Romprim", "i": "15:53", "r": "22:05", "d": true}}, "6/10": {"linie": "10", "s1": {"i": "06:19", "r": "14:41", "c": "Ghencea"}, "s2": {"c": "Romprim", "i": "14:41", "r": "23:50", "d": false}}, "10/10": {"linie": "10", "s1": {"i": "04:25", "r": "11:16", "c": "Romprim"}, "s2": {"c": "Romprim", "i": "14:35", "r": "23:39", "d": true}}, "12/10": {"linie": "10", "s1": {"i": "04:37", "r": "13:28", "c": "Romprim"}, "s2": {"c": "Romprim", "i": "13:28", "r": "22:04", "d": false}}, "14/10": {"linie": "10", "s1": {"i": "04:49", "r": "11:40", "c": "Romprim"}, "s2": {"c": "Romprim", "i": "14:59", "r": "23:54", "d": true}}, "17/10": {"linie": "10", "s1": {"i": "05:01", "r": "10:49", "c": "Romprim"}, "s2": {"c": "Romprim", "i": "15:17", "r": "23:05", "d": true}}}, "we": {"4/5": {"linie": "5", "s1": {"i": "04:50", "r": "12:59", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "12:59", "r": "21:50", "d": false}}, "5/5": {"linie": "5", "s1": {"i": "06:50", "r": "15:09", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "15:09", "r": "00:01", "d": false}}, "7/5": {"linie": "5", "s1": {"i": "07:09", "r": "15:28", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "15:28", "r": "23:34", "d": false}}, "9/5": {"linie": "5", "s1": {"i": "07:26", "r": "13:51", "c": "Pantelimon"}, "s2": {"c": "Pantelimon", "i": "13:51", "r": "22:43", "d": false}}, "1/7": {"linie": "7", "s1": {"i": "04:02", "r": "12:19", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "12:19", "r": "20:21", "d": false}}, "2/7": {"linie": "7", "s1": {"i": "06:24", "r": "14:41", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "14:41", "r": "23:41", "d": false}}, "3/7": {"linie": "7", "s1": {"i": "04:24", "r": "12:41", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "12:41", "r": "20:41", "d": false}}, "4/7": {"linie": "7", "s1": {"i": "06:47", "r": "15:01", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "15:01", "r": "23:01", "d": false}}, "5/7": {"linie": "7", "s1": {"i": "04:46", "r": "13:03", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "13:03", "r": "21:04", "d": false}}, "6/7": {"linie": "7", "s1": {"i": "07:09", "r": "15:23", "c": "Piața Unirii"}, "s2": {"c": "Piața Unirii", "i": "15:23", "r": "23:21", "d": false}}, "9/10": {"linie": "10", "s1": {"i": "04:45", "r": "13:04", "c": "Romprim"}, "s2": {"c": "Romprim", "i": "13:04", "r": "21:35", "d": false}}, "11/1": {"linie": "1", "s1": {"i": "07:12", "r": "15:32", "c": "Romprim", "dep": "Giurgiu"}, "s2": {"c": "Romprim", "i": "15:32", "r": "23:51", "d": false}}, "13/1": {"linie": "1", "s1": {"i": "07:25", "r": "15:47", "c": "Romprim", "dep": "Giurgiu"}, "s2": {"c": "Romprim", "i": "15:47", "r": "00:06", "d": false}}}};
+
+let DB=JSON.parse(JSON.stringify(DB_BAZA));
+let S=[], PLAN={}, MANUAL={}, EXTRA={};
+let SET={repaus:720,cont:1,libere:1,pastreaza:1,rezerva:1};
+let AN,LN, VIEW='soferi', PMOD='luna', SMOD='liber', TMOD='zl', ZMOD='post', FS='toti', ZI_SEL=null, ULTIM=null;
+
+const LUNI=['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+const ZS=['Du','Lu','Ma','Mi','Jo','Vi','Sâ'];
+const ZL=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
+
+/* ------------------------------ date ----------------------------------- */
+function ISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function D(z){return new Date(z+'T00:00:00');}
+function zPlus(z,n){const d=D(z);d.setDate(d.getDate()+n);return ISO(d);}
+function zileInLuna(a,l){return new Date(a,l,0).getDate();}
+function sarbNume(z){const d=D(z);return SARB[d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()]||null;}
+function tipZi(z){const w=D(z).getDay();return (w===0||w===6||sarbNume(z))?'we':'zl';}
+function lucratoare(z){const w=D(z).getDay();return w>=1&&w<=5&&!sarbNume(z);}
+function m2(t){if(!t)return 0;const p=String(t).split(':');return (+p[0])*60+(+(p[1]||0));}
+function durata(i,r){let d=m2(r)-m2(i);if(d<=0)d+=1440;return d;}
+function ohm(min){const s=min<0?'-':'';min=Math.abs(Math.round(min));
+  return s+Math.floor(min/60)+'.'+String(min%60).padStart(2,'0');}
+function hm(min){const s=min<0?'-':'';min=Math.abs(min);return s+Math.floor(min/60)+'h'+String(min%60).padStart(2,'0');}
+function saptamana(z){const d=D(z),t=new Date(d);t.setDate(d.getDate()+3-((d.getDay()+6)%7));
+  const w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7);}
+function zileLuna(){const n=zileInLuna(AN,LN),o=[];for(let i=1;i<=n;i++)o.push(AN+'-'+String(LN).padStart(2,'0')+'-'+String(i).padStart(2,'0'));return o;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function dataRo(z){const d=D(z);return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');}
+function ziScurt(z){const d=D(z);return d.getDate()+' '+ZS[d.getDay()];}
+
+/* ----------------------------- posturi ---------------------------------- */
+let _pc={};
+function posturi(z){
+  const t=tipZi(z);
+  if(_pc[t])return _pc[t];
+  const src=DB[t]||{},arr=[];
+  Object.keys(src).forEach(k=>{
+    if(k[0]==='_')return;
+    const d=src[k];if(!d)return;
+    const tur=k.split('/')[0], linie=String(d.linie||k.split('/')[1]||'?');
+    [[1,d.s1],[2,d.s2]].forEach(x=>{
+      const sc=x[0],o=x[1];if(!o||!o.i||!o.r)return;
+      arr.push({id:k+'|'+sc,key:k,tur:tur,linie:linie,sch:sc,i:o.i,r:o.r,
+        min:durata(o.i,o.r),dep:(sc===1)||!!o.d,cap:o.c||''});
+    });
+  });
+  arr.sort((a,b)=>(+a.linie-+b.linie)||(+a.tur-+b.tur)||(a.sch-b.sch));
+  _pc[t]=arr;return arr;
+}
+function postDupaId(z,id){return posturi(z).find(p=>p.id===id)||null;}
+function tl(p){return p.tur+'/'+p.linie;}
+function liniiDisponibile(){
+  const s=new Set();
+  ['zl','we'].forEach(t=>Object.keys(DB[t]||{}).forEach(k=>{
+    if(k[0]==='_')return;const l=(DB[t][k]&&DB[t][k].linie)||k.split('/')[1];if(l)s.add(String(l));}));
+  return [...s].sort((a,b)=>+a-+b);
+}
+
+/* ------------------------------ șoferi ---------------------------------- */
+function soferGol(nr,nume){return {nr:String(nr),nume:nume||('Șofer '+nr),activ:true,veh:'',sch:'orice',maxC:5,
+  we:true,mod:'toate',linii:[],liberZi:[],abs:[],obs:''};}
+function incarcaSoferi(){
+  let sv=[];try{sv=JSON.parse(localStorage.getItem('rep_soferi')||'[]')||[];}catch(e){}
+  const m={};sv.forEach(s=>m[s.nr]=s);
+  S=SOFERI_BAZA.map(b=>Object.assign(soferGol(b.nr,b.nume),m[b.nr]||{}));
+  sv.forEach(s=>{if(!S.some(x=>x.nr===s.nr))S.push(Object.assign(soferGol(s.nr,s.nume),s));});
+  ordoneaza();
+}
+function ordoneaza(){S.sort((a,b)=>a.nume.localeCompare(b.nume,'ro'));}
+function salveazaSoferi(){try{localStorage.setItem('rep_soferi',JSON.stringify(S));}catch(e){}}
+function sofer(nr){return S.find(s=>s.nr===String(nr))||null;}
+function numeScurt(nr){const s=sofer(nr);if(!s)return '#'+nr;const p=s.nume.split(' ');return p.length>2?p[0]+' '+p[1]:s.nume;}
+function activi(){return S.filter(s=>s.activ);}
+function absent(s,z){for(const a of (s.abs||[]))if(z>=a.de&&z<=a.pana)return a.tip;return null;}
+
+/* ------------------------------- plan ----------------------------------- */
+function cheiePlan(){return 'rep_plan_'+AN+'-'+String(LN).padStart(2,'0');}
+function incarcaPlan(){PLAN={};MANUAL={};EXTRA={};
+  try{const o=JSON.parse(localStorage.getItem(cheiePlan())||'null');
+    if(o){PLAN=o.plan||{};MANUAL=o.manual||{};EXTRA=o.extra||{};}}catch(e){}}
+function salveazaPlan(){try{localStorage.setItem(cheiePlan(),
+  JSON.stringify({plan:PLAN,manual:MANUAL,extra:EXTRA}));}catch(e){}}
+function rezervaZi(nr,z){return (EXTRA[z]||{})[nr]||0;}
+function puneRezerva(nr,z,min){(EXTRA[z]=EXTRA[z]||{})[nr]=min;MANUAL[z+'|R|'+nr]=1;dupaEdit();}
+function scoateRezerva(nr,z){if(EXTRA[z])delete EXTRA[z][nr];delete MANUAL[z+'|R|'+nr];dupaEdit();}
+function postRez(min){return {rez:true,id:'R',key:'R',tur:'R',linie:'',sch:0,i:'06:00',r:'14:00',min:min||480,dep:false,cap:''};}
+function indexPlan(){
+  const ix={};S.forEach(s=>ix[s.nr]={});
+  for(const z in PLAN)for(const pid in PLAN[z]){
+    const nr=PLAN[z][pid];if(!nr)continue;
+    if(!ix[nr])ix[nr]={};
+    const p=postDupaId(z,pid);if(p)ix[nr][z]=p;
+  }
+  for(const z in EXTRA)for(const nr in EXTRA[z]){
+    if(!ix[nr])ix[nr]={};
+    if(!ix[nr][z])ix[nr][z]=postRez(EXTRA[z][nr]);
+  }
+  return ix;
+}
+function pune(z,pid,nr,manual){
+  if(!PLAN[z])PLAN[z]={};
+  if(nr)PLAN[z][pid]=String(nr);else delete PLAN[z][pid];
+  if(manual)MANUAL[z+'|'+pid]=1;else delete MANUAL[z+'|'+pid];
+}
+function stergeLuna(){
+  if(!confirm('Ștergi tot programul lunii '+LUNI[LN-1]+' '+AN+'?'))return;
+  PLAN={};MANUAL={};EXTRA={};salveazaPlan();ULTIM=null;reimprospateaza();toast('Programul lunii a fost șters');
+}
+
+/* ----------------------------- reguli ----------------------------------- */
+function serie(nr,z,ix){const r=ix[nr]||{};let n=1,c=zPlus(z,-1);
+  while(r[c]){n++;c=zPlus(c,-1);}c=zPlus(z,1);while(r[c]){n++;c=zPlus(c,1);}return n;}
+function serieInainte(nr,z,ix){const r=ix[nr]||{};let c=zPlus(z,-1),p=0;
+  while(!r[c]&&p<10){p++;c=zPlus(c,-1);}let n=0;while(r[c]){n++;c=zPlus(c,-1);}return {pauza:p,serie:n};}
+function schPermis(s,z){if(s.sch==='1')return 1;if(s.sch==='2')return 2;
+  if(s.sch==='alt')return (saptamana(z)%2)?1:2;if(s.sch==='alt2')return (saptamana(z)%2)?2:1;return 0;}
+function blocaj(s,z,p,ix){
+  if(!s.activ)return 'scos din repartizare';
+  const a=absent(s,z);if(a)return 'în '+a;
+  if(!s.we&&tipZi(z)==='we')return 'nu lucrează în weekend';
+  if((s.liberZi||[]).includes(D(z).getDay()))return 'are '+ZL[D(z).getDay()].toLowerCase()+' liber';
+  const r=ix[s.nr]||{};
+  if(r[z])return 'are deja tură ('+tl(r[z])+')';
+  if(s.mod==='doar'&&!(s.linii||[]).includes(p.linie))return 'doar pe liniile '+((s.linii||[]).join(', ')||'—');
+  if(s.mod==='fara'&&(s.linii||[]).includes(p.linie))return 'nu lucrează pe linia '+p.linie;
+  const sp=schPermis(s,z);if(sp&&sp!==p.sch)return 'doar schimbul '+sp;
+  if(serie(s.nr,z,ix)>(s.maxC||5))return 'ar face peste '+(s.maxC||5)+' zile la rând';
+  const si=serieInainte(s.nr,z,ix);
+  if(si.pauza>0&&si.pauza<(SET.libere||1)&&si.serie>=(s.maxC||5))return 'îi trebuie '+SET.libere+' zile libere';
+  const ier=r[zPlus(z,-1)];
+  if(ier&&!ier.rez){const g=(1440+m2(p.i))-(m2(ier.i)+ier.min);if(g<SET.repaus)return 'repaus doar '+hm(g)+' după ziua precedentă';}
+  const mai=r[zPlus(z,1)];
+  if(mai&&!mai.rez){const g=(1440+m2(mai.i))-(m2(p.i)+p.min);if(g<SET.repaus)return 'repaus doar '+hm(g)+' până a doua zi';}
+  return null;
+}
+
+/* ------------------------------- ore ------------------------------------ */
+function normaMin(){return normaZile()*480;}
+function absMinLuna(s){let n=0;zileLuna().forEach(z=>{if(lucratoare(z)&&absent(s,z))n++;});return n*480;}
+function oreSofer(nr,ix){
+  const s=sofer(nr);if(!s)return {tura:0,zile:0,rez:0,abs:0,total:0,norma:normaMin(),dif:-normaMin()};
+  let t=0,zl=0,rz=0;
+  zileLuna().forEach(z=>{
+    const p=(ix[nr]||{})[z];
+    if(p&&!p.rez){t+=p.min;zl++;}
+    rz+=rezervaZi(nr,z);
+  });
+  const a=absMinLuna(s),n=normaMin();
+  return {tura:t,zile:zl,rez:rz,abs:a,total:t+rz+a,norma:n,dif:t+rz+a-n};
+}
+
+/* ------------------------------ ținte ----------------------------------- */
+function normaZile(){return zileLuna().filter(lucratoare).length;}
+function tinteLuna(){
+  const zile=zileLuna(),nz=normaZile(),t={};
+  activi().forEach(s=>{
+    let ab=0,disp=0;
+    zile.forEach(z=>{
+      const bl=absent(s,z)||(!s.we&&tipZi(z)==='we'?1:0)||((s.liberZi||[]).includes(D(z).getDay())?1:0);
+      if(!bl)disp++;
+      if(lucratoare(z)&&absent(s,z))ab++;
+    });
+    const cap=Math.min(disp,Math.floor(disp*(s.maxC||5)/((s.maxC||5)+(SET.libere||1)))+1);
+    t[s.nr]={norma:Math.max(0,nz-ab),disp:disp,cap:cap,tinta:0};
+  });
+  let cerere=0;zile.forEach(z=>cerere+=posturi(z).length);
+  let baza=0;for(const nr in t)baza+=Math.min(t[nr].norma,t[nr].cap);
+  const f=baza>0?cerere/baza:0;let sum=0;const rest=[];
+  for(const nr in t){const v=Math.min(t[nr].norma,t[nr].cap)*f;
+    t[nr].tinta=Math.min(t[nr].cap,Math.floor(v));sum+=t[nr].tinta;rest.push([nr,v-Math.floor(v)]);}
+  rest.sort((a,b)=>b[1]-a[1]);
+  let i=0;while(sum<cerere&&i<rest.length*3){const nr=rest[i%rest.length][0];
+    if(t[nr].tinta<t[nr].cap){t[nr].tinta++;sum++;}i++;}
+  return {t:t,cerere:cerere,capacitate:baza,norma:nz};
+}
+
+/* ----------------------------- GENERARE --------------------------------- */
+function genereaza(){
+  const t0=Date.now(),zile=zileLuna();
+  if(!activi().length){toast('Nu ai niciun șofer activ');return;}
+  if(!SET.pastreaza){PLAN={};MANUAL={};EXTRA={};}
+  else{const nou={};for(const z in PLAN)for(const pid in PLAN[z])
+    if(MANUAL[z+'|'+pid])(nou[z]=nou[z]||{})[pid]=PLAN[z][pid];PLAN=nou;
+    const ne={};for(const z in EXTRA)for(const nr in EXTRA[z])
+      if(MANUAL[z+'|R|'+nr])(ne[z]=ne[z]||{})[nr]=EXTRA[z][nr];EXTRA=ne;}
+  const T=tinteLuna(),ix=indexPlan(),st={},AC=activi();
+  AC.forEach(s=>st[s.nr]={zile:0,min:0,tinta:(T.t[s.nr]||{}).tinta||0,
+    tintaMin:Math.max(0,normaMin()-absMinLuna(s))});
+  for(const z in PLAN)for(const pid in PLAN[z]){const nr=PLAN[z][pid];
+    if(st[nr]){st[nr].zile++;const p=postDupaId(z,pid);if(p)st[nr].min+=p.min;}}
+  const gol=[];
+  zile.forEach(z=>{
+    const luate=PLAN[z]||(PLAN[z]={});
+    const ramase=posturi(z).filter(p=>!luate[p.id]);
+    const cand={},folositi=new Set(Object.values(luate));
+    ramase.forEach(p=>{cand[p.id]=AC.filter(s=>!folositi.has(s.nr)&&!blocaj(s,z,p,ix));});
+    const coada=ramase.slice();
+    while(coada.length){
+      coada.sort((a,b)=>cand[a.id].length-cand[b.id].length);
+      const p=coada.shift();
+      const lst=cand[p.id].filter(s=>!folositi.has(s.nr)&&!blocaj(s,z,p,ix));
+      if(!lst.length){gol.push({z:z,p:p,motiv:motivGol(z,p,ix,folositi)});continue;}
+      let best=lst[0],bs=-1e9;
+      lst.forEach(s=>{const v=scor(s,p,z,ix,st);if(v>bs){bs=v;best=s;}});
+      luate[p.id]=best.nr;ix[best.nr][z]=p;folositi.add(best.nr);
+      st[best.nr].zile++;st[best.nr].min+=p.min;
+    }
+  });
+  const rep=repara(gol,ix,st);
+  const mut=echilibreaza(ix);
+  const rz=SET.rezerva?umpleRezerva(ix):0;
+  salveazaPlan();
+  ULTIM={T:T,st:st,gol:gol.filter(x=>!x.rez),rep:rep,rz:rz,mut:mut,ms:Date.now()-t0};
+  reimprospateaza();
+  toast('Program generat în '+((Date.now()-t0)/1000).toFixed(1)+' s');
+}
+function echilibreaza(ix){
+  const zile=zileLuna();let mutari=0;
+  for(let pas=0;pas<4;pas++){
+    const o={};activi().forEach(s=>o[s.nr]=oreSofer(s.nr,ix).dif);
+    const peste=activi().filter(s=>o[s.nr]>30).sort((a,b)=>o[b.nr]-o[a.nr]);
+    const sub=activi().filter(s=>o[s.nr]<-30);
+    if(!peste.length||!sub.length)break;
+    let miscat=false;
+    for(const s of peste){
+      for(const z of zile){
+        if(o[s.nr]<=30)break;
+        const p=(ix[s.nr]||{})[z];if(!p||p.rez)continue;
+        delete ix[s.nr][z];
+        const t=sub.find(x=>x.nr!==s.nr&&o[x.nr]+p.min<=30&&!(ix[x.nr]||{})[z]&&!blocaj(x,z,p,ix));
+        if(!t){ix[s.nr][z]=p;continue;}
+        ix[t.nr][z]=p;PLAN[z][p.id]=t.nr;
+        o[s.nr]-=p.min;o[t.nr]+=p.min;mutari++;miscat=true;
+      }
+    }
+    if(!miscat)break;
+  }
+  return mutari;
+}
+function umpleRezerva(ix){
+  const zile=zileLuna();let zileRez=0;
+  activi().forEach(s=>{
+    let lipsa=-oreSofer(s.nr,ix).dif;
+    if(lipsa<60)return;
+    for(const z of zile){
+      if(lipsa<300)break;
+      if((ix[s.nr]||{})[z]||absent(s,z))continue;
+      if(!s.we&&tipZi(z)==='we')continue;
+      if((s.liberZi||[]).includes(D(z).getDay()))continue;
+      ix[s.nr][z]=postRez(480);
+      if(serie(s.nr,z,ix)>(s.maxC||5)){delete ix[s.nr][z];continue;}
+      (EXTRA[z]=EXTRA[z]||{})[s.nr]=480;
+      lipsa-=480;zileRez++;
+    }
+    if(lipsa>=1){
+      const zi=zile.find(z=>{const p=(ix[s.nr]||{})[z];return p&&!p.rez;})||
+               zile.find(z=>(ix[s.nr]||{})[z]);
+      if(zi){(EXTRA[zi]=EXTRA[zi]||{})[s.nr]=rezervaZi(s.nr,zi)+Math.round(lipsa);}
+    }
+  });
+  return zileRez;
+}
+function scor(s,p,z,ix,st){
+  let sc=0;const c=SET.cont===undefined?1:SET.cont;
+  const ieri=(ix[s.nr]||{})[zPlus(z,-1)];
+  if(ieri){if(ieri.id===p.id)sc+=600*c;else if(ieri.linie===p.linie)sc+=200*c;if(ieri.sch===p.sch)sc+=70*c;}
+  const q=st[s.nr]||{min:0,tintaMin:0};
+  sc+=((q.tintaMin-q.min)/60)*40;
+  if(q.min+p.min>q.tintaMin)sc-=700;
+  sc-=serie(s.nr,z,ix)*35;
+  if(s.mod==='doar'&&(s.linii||[]).includes(p.linie))sc+=120;
+  return sc;
+}
+function motivGol(z,p,ix,folositi){
+  const m={};
+  activi().forEach(s=>{const b=folositi.has(s.nr)?'lucrează deja în ziua asta':blocaj(s,z,p,ix);
+    if(b)m[b.replace(/\(.*\)/,'').trim()]=(m[b.replace(/\(.*\)/,'').trim()]||0)+1;});
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]+' — '+x[1]).join(' · ');
+}
+function repara(lista,ix,st){
+  let n=0;
+  lista.forEach(g=>{
+    const z=g.z,p=g.p;
+    for(const s of activi()){
+      const q=(ix[s.nr]||{})[z];if(!q)continue;
+      delete ix[s.nr][z];
+      if(blocaj(s,z,p,ix)){ix[s.nr][z]=q;continue;}
+      const alt=activi().find(o=>o.nr!==s.nr&&!(ix[o.nr]||{})[z]&&!blocaj(o,z,q,ix));
+      if(!alt){ix[s.nr][z]=q;continue;}
+      ix[s.nr][z]=p;ix[alt.nr][z]=q;
+      PLAN[z][p.id]=s.nr;PLAN[z][q.id]=alt.nr;
+      if(st[alt.nr]){st[alt.nr].zile++;st[alt.nr].min+=q.min;}
+      if(st[s.nr])st[s.nr].min+=p.min-q.min;
+      g.rez=true;n++;break;
+    }
+  });
+  return n;
+}
+
+/* ---------------------------- verificare -------------------------------- */
+function deseneazaVerificare(){
+  const zile=zileLuna(),nAct=activi().length,norma=normaMin();
+  let oreTure=0;zile.forEach(z=>posturi(z).forEach(p=>oreTure+=p.min));
+  let posturiTot=0;zile.forEach(z=>posturiTot+=posturi(z).length);
+  let oreAbs=0;activi().forEach(s=>oreAbs+=absMinLuna(s));
+  const necesar=nAct*norma-oreAbs, lipsa=necesar-oreTure;
+  const acopera=norma?(oreTure/norma):0;
+  document.getElementById('gen-stat').innerHTML=
+    st(nAct,'șoferi activi')+
+    st(posturiTot,'posturi de acoperit')+
+    st(ohm(oreTure),'ore din ture')+
+    st(ohm(norma),'norma unui om');
+  const b=document.getElementById('gen-balanta');
+  if(lipsa>norma/2)
+    b.innerHTML='<div class="note warn"><b>Turele lunii acoperă '+acopera.toFixed(0)+' oameni la normă întreagă.</b> '+
+      'Tu ai '+nAct+' șoferi activi, deci mai rămân <b>'+ohm(lipsa)+' ore</b> de acoperit — aproximativ <b>'+
+      Math.round(lipsa/480)+' zile de rezervă</b>. Dacă lista are oameni care nu țin de tine, debifează-i la „Activ"; '+
+      'altfel lasă-i și generarea le pune rezervă până la normă.</div>';
+  else if(lipsa<-norma/2)
+    b.innerHTML='<div class="note bad"><b>Nu ai destui șoferi.</b> Turele cer '+ohm(-lipsa)+
+      ' ore peste ce pot da cei '+nAct+' activi. Rămân posturi neacoperite sau se lucrează peste normă.</div>';
+  else
+    b.innerHTML='<div class="note ok"><b>Personalul se potrivește pe lună.</b> Turele dau '+ohm(oreTure)+
+      ' ore, iar cei '+nAct+' șoferi activi au nevoie de '+ohm(necesar)+'.</div>';
+}
+function st(v,l,c){return '<div class="st '+(c||'')+'"><b>'+v+'</b><span>'+l+'</span></div>';}
+
+/* ------------------------------ raport ---------------------------------- */
+function deseneazaRaport(){
+  const box=document.getElementById('gen-raport');
+  if(!ULTIM){box.innerHTML='';return;}
+  const R=ULTIM,g=R.gol.length,ix=indexPlan();
+  const ore=activi().map(s=>({s:s,o:oreSofer(s.nr,ix)}));
+  const laNorma=ore.filter(x=>Math.abs(x.o.dif)<1).length;
+  let h='<div class="stats" style="margin:16px 0 14px">'+
+    st(R.T.cerere-g,'posturi acoperite','ok')+st(g,'rămase goale',g?'bad':'ok')+
+    st(R.rz||0,'zile de rezervă')+st(R.mut||0,'ture reechilibrate')+st(laNorma+' / '+ore.length,'exact la normă',laNorma===ore.length?'ok':'warn')+'</div>';
+  if(g){
+    h+='<div class="panel"><div class="panel-h">Posturi neacoperite</div><div class="tw" style="max-height:300px">'+
+      '<table class="t"><thead><tr><th>Ziua</th><th>Tura</th><th class="c">Schimb</th><th>Ore</th><th>De ce nu s-a putut</th></tr></thead><tbody>';
+    R.gol.slice(0,200).forEach(x=>h+='<tr><td>'+ziScurt(x.z)+'</td><td class="mono">'+esc(tl(x.p))+'</td>'+
+      '<td class="c"><span class="sch'+x.p.sch+'">S'+x.p.sch+'</span></td><td class="mono">'+esc(x.p.i)+'–'+esc(x.p.r)+'</td>'+
+      '<td class="hint">'+esc(x.motiv)+'</td></tr>');
+    h+='</tbody></table></div></div>';
+  }
+  const ab=ore.filter(x=>Math.abs(x.o.dif)>=1).sort((a,b)=>Math.abs(b.o.dif)-Math.abs(a.o.dif));
+  if(ab.length){
+    h+='<div class="panel"><div class="panel-h">Cine nu iese la normă</div><div class="tw" style="max-height:320px">'+
+      '<table class="t"><thead><tr><th>Șofer</th><th class="c">Zile</th><th class="c">Ore ture</th>'+
+      '<th class="c">Rezervă</th><th class="c">CO/CM</th><th class="c">Total</th><th class="c">Dif</th></tr></thead><tbody>';
+    ab.slice(0,80).forEach(x=>h+='<tr><td>'+esc(numeScurt(x.s.nr))+' <span class="nrb">'+esc(x.s.nr)+'</span></td>'+
+      '<td class="c mono">'+x.o.zile+'</td><td class="c mono">'+ohm(x.o.tura)+'</td>'+
+      '<td class="c mono">'+(x.o.rez?ohm(x.o.rez):'')+'</td><td class="c mono">'+(x.o.abs?ohm(x.o.abs):'')+'</td>'+
+      '<td class="c mono">'+ohm(x.o.total)+'</td><td class="c mono" style="color:'+(x.o.dif>0?'var(--amber)':'var(--rosu)')+'">'+
+      (x.o.dif>0?'+':'')+ohm(x.o.dif)+'</td></tr>');
+    h+='</tbody></table></div><div class="panel-b hint">Norma lunii e '+ohm(normaMin())+
+      ' ore. La total intră turele, orele de rezervă și zilele de CO sau CM care cad în zile lucrătoare, câte 8 ore fiecare.</div></div>';
+  }
+  box.innerHTML=h;
+}
+/* ------------------------------ ȘOFERI ---------------------------------- */
+function filtruSoferi(f){FS=f;['toti','activi','restr','abs'].forEach(x=>
+  document.getElementById('fs-'+x).classList.toggle('on',x===f));deseneazaSoferi();}
+function listaFiltrata(){
+  const q=(document.getElementById('cauta').value||'').toLowerCase().trim();
+  const azi=ISO(new Date());let l=S.slice();
+  if(q)l=l.filter(s=>s.nume.toLowerCase().includes(q)||s.nr.includes(q));
+  if(FS==='activi')l=l.filter(s=>s.activ);
+  if(FS==='restr')l=l.filter(s=>s.sch!=='orice'||s.maxC!==5||!s.we||s.mod!=='toate'||(s.liberZi||[]).length);
+  if(FS==='abs')l=l.filter(s=>(s.abs||[]).some(a=>a.pana>=azi));
+  return l;
+}
+function deseneazaSoferi(){
+  const l=listaFiltrata(),ix=indexPlan(),zile=zileLuna();
+  document.getElementById('c-soferi').textContent=activi().length;
+  document.getElementById('s-sumar').textContent=l.length+' afișați · '+activi().length+' în repartizare din '+S.length;
+  let h='<thead><tr><th class="c">Activ</th><th>Nr</th><th>Nume</th><th class="c">Veh</th><th class="c">Schimb</th>'+
+    '<th class="c">Max zile</th><th class="c">Weekend</th><th>Linii</th><th>Absențe și zile libere</th>'+
+    '<th class="c">Zile</th><th class="c">Ore</th><th class="c">Dif</th><th></th></tr></thead><tbody>';
+  l.forEach(s=>{
+    const o=oreSofer(s.nr,ix);
+    const tg=[];
+    (s.liberZi||[]).forEach(w=>tg.push('<span class="tag a">liber '+ZS[w]+'</span>'));
+    (s.abs||[]).filter(a=>a.pana>=zile[0]&&a.de<=zile[zile.length-1]).forEach(a=>
+      tg.push('<span class="tag '+(a.tip==='CM'?'r':'a')+'">'+esc(a.tip)+' '+dataRo(a.de)+'–'+dataRo(a.pana)+'</span>'));
+    (s.abs||[]).filter(a=>a.de>zile[zile.length-1]).slice(0,1).forEach(a=>
+      tg.push('<span class="tag">'+esc(a.tip)+' din '+dataRo(a.de)+'</span>'));
+    h+='<tr class="'+(s.activ?'':'off')+'">'+
+      '<td class="c"><input type="checkbox" '+(s.activ?'checked':'')+' onchange="setS(\''+s.nr+'\',\'activ\',this.checked)"></td>'+
+      '<td><span class="nrb">'+esc(s.nr)+'</span></td>'+
+      '<td>'+esc(s.nume)+(s.obs?' <span class="tag">notă</span>':'')+'</td>'+
+      '<td class="c"><input value="'+esc(s.veh||'')+'" style="width:58px;text-align:center" '+
+        'onchange="setS(\''+s.nr+'\',\'veh\',this.value.trim())"></td>'+
+      '<td class="c"><select onchange="setS(\''+s.nr+'\',\'sch\',this.value)">'+
+        [['orice','Oricare'],['1','Sch 1'],['2','Sch 2'],['alt','Alternativ']].map(o=>
+        '<option value="'+o[0]+'"'+(s.sch===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></td>'+
+      '<td class="c"><select onchange="setS(\''+s.nr+'\',\'maxC\',+this.value)">'+
+        [4,5,6,7,8,9,10,11,12].map(v=>'<option'+(s.maxC===v?' selected':'')+'>'+v+'</option>').join('')+'</select></td>'+
+      '<td class="c"><input type="checkbox" '+(s.we?'checked':'')+' onchange="setS(\''+s.nr+'\',\'we\',this.checked)"></td>'+
+      '<td>'+(s.mod==='toate'?'<span class="mut">toate</span>':
+        '<span class="tag '+(s.mod==='doar'?'v':'r')+'">'+(s.mod==='doar'?'doar ':'fără ')+esc((s.linii||[]).join(', ')||'—')+'</span>')+'</td>'+
+      '<td>'+(tg.join('')||'<span class="mut">—</span>')+'</td>'+
+      '<td class="c mono">'+(o.zile||'')+'</td><td class="c mono">'+(o.total?ohm(o.total):'')+'</td>'+
+      '<td class="c mono" style="color:'+(Math.abs(o.dif)<1?'var(--verde)':(o.dif>0?'var(--amber)':'var(--rosu)'))+'">'+
+        (s.activ?(o.dif>0?'+':'')+ohm(o.dif):'')+'</td>'+
+      '<td class="c"><button class="btn sm" onclick="detaliiSofer(\''+s.nr+'\')">Detalii</button></td></tr>';
+  });
+  document.getElementById('tb-soferi').innerHTML=h+'</tbody>';
+}
+function setS(nr,k,v){const s=sofer(nr);if(!s)return;s[k]=v;salveazaSoferi();deseneazaSoferi();
+  if(VIEW==='gen')deseneazaVerificare();}
+function detaliiSofer(nr){
+  const s=sofer(nr);if(!s)return;const linii=liniiDisponibile();
+  let h='<div class="dlg-h"><h3>'+esc(s.nume)+'</h3><span class="nrb">'+esc(s.nr)+'</span>'+
+    '<button class="x" onclick="inchide()">✕</button></div><div class="dlg-b">'+
+    '<div class="fld"><label class="f">Nume</label><input value="'+esc(s.nume)+'" onchange="redenumeste(\''+nr+'\',this.value)"></div>'+
+    '<div class="fld"><label class="f">Zile libere fixe în săptămână</label><div class="chips">'+
+      [1,2,3,4,5,6,0].map(w=>'<button class="chip'+((s.liberZi||[]).includes(w)?' on':'')+
+      '" onclick="comutaLiberZi(\''+nr+'\','+w+')">'+ZS[w]+'</button>').join('')+'</div></div>'+
+    '<div class="fld"><label class="f">Linii</label><div class="seg">'+
+      [['toate','Toate'],['doar','Doar pe…'],['fara','Fără…']].map(o=>'<button class="'+(s.mod===o[0]?'on':'')+
+      '" onclick="setSD(\''+nr+'\',\'mod\',\''+o[0]+'\')">'+o[1]+'</button>').join('')+'</div>'+
+      (s.mod!=='toate'?'<div class="chips" style="margin-top:8px">'+linii.map(x=>'<button class="chip'+
+        ((s.linii||[]).includes(x)?(s.mod==='fara'?' no':' on'):'')+'" onclick="comutaLinie(\''+nr+'\',\''+x+'\')">Linia '+esc(x)+
+        '</button>').join('')+'</div>':'')+'</div>'+
+    '<div class="fld"><label class="f">Absențe</label><div class="lst">'+
+      ((s.abs||[]).map((a,i)=>'<div class="it"><span class="tag '+(a.tip==='CM'?'r':'a')+'">'+esc(a.tip)+'</span>'+
+        '<span>'+dataRo(a.de)+' – '+dataRo(a.pana)+'</span><span class="mut">'+
+        (Math.round((D(a.pana)-D(a.de))/864e5)+1)+' zile</span><span class="sp"></span>'+
+        '<button class="btn sm dgr" onclick="stergeAbs(\''+nr+'\','+i+')">Șterge</button></div>').join('')||
+        '<div class="it mut">Nicio absență.</div>')+'</div>'+
+      '<div class="row" style="margin-top:8px">'+
+        '<select id="ab-tip" style="width:90px">'+['CO','CM','CFP','CIM','REC','VMA','SSM','SU','PM4','MM','DEC','NC'].map(x=>'<option>'+x+'</option>').join('')+'</select>'+
+        '<input type="date" id="ab-de" style="width:150px" value="'+zileLuna()[0]+'">'+
+        '<input type="date" id="ab-pana" style="width:150px" value="'+zileLuna()[0]+'">'+
+        '<button class="btn" onclick="adaugaAbs(\''+nr+'\')">Adaugă</button></div></div>'+
+    '<div class="fld"><label class="f">Observații</label><textarea rows="2" onchange="setSD(\''+nr+'\',\'obs\',this.value,1)">'+esc(s.obs||'')+'</textarea></div>'+
+    '<div class="row"><button class="btn pri" onclick="inchide()">Gata</button>'+
+      '<button class="btn dgr" onclick="stergeSofer(\''+nr+'\')">Scoate din listă</button></div></div>';
+  dlg(h);
+}
+function setSD(nr,k,v,tacut){const s=sofer(nr);s[k]=v;salveazaSoferi();deseneazaSoferi();if(!tacut)detaliiSofer(nr);}
+function redenumeste(nr,v){const s=sofer(nr);s.nume=v.trim()||s.nume;ordoneaza();salveazaSoferi();deseneazaSoferi();}
+function comutaLiberZi(nr,w){const s=sofer(nr);s.liberZi=s.liberZi||[];
+  const i=s.liberZi.indexOf(w);i<0?s.liberZi.push(w):s.liberZi.splice(i,1);salveazaSoferi();deseneazaSoferi();detaliiSofer(nr);}
+function comutaLinie(nr,l){const s=sofer(nr);s.linii=s.linii||[];
+  const i=s.linii.indexOf(l);i<0?s.linii.push(l):s.linii.splice(i,1);salveazaSoferi();deseneazaSoferi();detaliiSofer(nr);}
+function adaugaAbs(nr){
+  const s=sofer(nr),t=document.getElementById('ab-tip').value,
+    de=document.getElementById('ab-de').value,pana=document.getElementById('ab-pana').value;
+  if(!de||!pana||pana<de){toast('Verifică datele');return;}
+  s.abs=s.abs||[];s.abs.push({tip:t,de:de,pana:pana});s.abs.sort((a,b)=>a.de<b.de?-1:1);
+  salveazaSoferi();deseneazaSoferi();detaliiSofer(nr);
+}
+function stergeAbs(nr,i){const s=sofer(nr);s.abs.splice(i,1);salveazaSoferi();deseneazaSoferi();detaliiSofer(nr);}
+function adaugaSofer(){
+  const nr=prompt('Număr de serviciu:');if(!nr)return;
+  if(sofer(nr)){toast('Numărul există deja');return;}
+  const nume=prompt('Nume și prenume:');if(!nume)return;
+  S.push(soferGol(nr.trim(),nume.trim()));ordoneaza();salveazaSoferi();deseneazaSoferi();detaliiSofer(nr.trim());
+}
+function stergeSofer(nr){
+  if(!confirm('Scoți definitiv '+numeScurt(nr)+' din listă? Programul deja făcut nu se schimbă.'))return;
+  S=S.filter(s=>s.nr!==nr);salveazaSoferi();inchide();deseneazaSoferi();
+}
+
+/* ------------------------------ MATRICE --------------------------------- */
+function deseneazaMatrice(){
+  const q=(document.getElementById('cauta2').value||'').toLowerCase().trim();
+  const zile=zileLuna(),ix=indexPlan();
+  let l=S.filter(s=>s.activ||Object.keys(ix[s.nr]||{}).length);
+  if(q)l=l.filter(s=>s.nume.toLowerCase().includes(q)||s.nr.includes(q));
+  let h='<thead><tr><th class="nm">Șofer ('+l.length+')</th>';
+  zile.forEach(z=>{
+    const tot=posturi(z).length,pus=Object.keys(PLAN[z]||{}).length,pr=tot?pus/tot:1;
+    h+='<th class="'+(tipZi(z)==='we'?'we':'')+'" title="'+ziScurt(z)+': '+pus+' din '+tot+'">'+
+      '<div class="zi">'+D(z).getDate()+'</div><div class="zw">'+ZS[D(z).getDay()]+'</div>'+
+      '<div class="rail"><i style="width:'+Math.round(pr*100)+'%"></i></div></th>';
+  });
+  h+='<th class="tot">Zile</th><th class="tot">Ore</th><th class="tot">Dif</th></tr></thead><tbody>';
+  l.forEach(s=>{
+    let c='';const o=oreSofer(s.nr,ix);
+    zile.forEach(z=>{
+      const p=(ix[s.nr]||{})[z],a=absent(s,z),we=tipZi(z)==='we'?' we':'',rz=rezervaZi(s.nr,z);
+      let cls='',t='·',tt=esc(s.nume)+' · '+ziScurt(z);
+      if(p&&p.rez){cls='rz';t='R';tt+=' · rezervă '+ohm(p.min);}
+      else if(p){cls='s'+p.sch;t=tl(p);tt+=' · '+p.i+'–'+p.r+(rz?' +rez '+ohm(rz):'');}
+      else if(a){cls=a==='CM'?'cm':'co';t=a;tt+=' · '+a;}
+      c+='<td><span class="cl '+cls+we+'" title="'+tt+'" onclick="deschideCelula(\''+s.nr+'\',\''+z+'\')">'+esc(t)+'</span></td>';
+    });
+    h+='<tr><td class="nm"><b>'+esc(s.nume)+'</b><span>'+esc(s.nr)+(s.veh?' · '+esc(s.veh):'')+'</span></td>'+c+
+      '<td class="tot">'+(o.zile||'')+'</td><td class="tot">'+(o.total?ohm(o.total):'')+'</td>'+
+      '<td class="tot" style="color:'+(Math.abs(o.dif)<1?'var(--verde)':(o.dif>0?'var(--amber)':'var(--rosu)'))+'">'+
+        ((o.dif>0?'+':'')+ohm(o.dif))+'</td></tr>';
+  });
+  document.getElementById('mx-wrap').innerHTML='<table class="mx">'+h+'</tbody></table>';
+  const zileT=zile.reduce((a,z)=>a+posturi(z).length,0),pusT=zile.reduce((a,z)=>a+Object.keys(PLAN[z]||{}).length,0);
+  document.getElementById('p-sumar').textContent=pusT+' din '+zileT+' posturi acoperite';
+}
+function deschideCelula(nr,z){
+  const ix=indexPlan(),p=(ix[nr]||{})[z],s=sofer(nr);
+  const ps=posturi(z),luate=PLAN[z]||{};
+  const b=absent(s,z);
+  let h='<div class="dlg-h"><h3>'+esc(numeScurt(nr))+'</h3><span class="mut">'+D(z).getDate()+' '+LUNI[LN-1]+' · '+ZL[D(z).getDay()]+
+    (tipZi(z)==='we'?' · program de weekend':'')+'</span><button class="x" onclick="inchide()">✕</button></div><div class="dlg-b">';
+  if(b)h+='<div class="note warn" style="margin-bottom:12px">Este în <b>'+esc(b)+'</b> în ziua asta.</div>';
+  if(p)h+='<div class="note ok" style="margin-bottom:12px">Are <b>'+esc(tl(p))+'</b>, schimbul '+p.sch+', '+esc(p.i)+'–'+esc(p.r)+
+    ' ('+hm(p.min)+'). <button class="btn sm" style="margin-left:8px" onclick="pune(\''+z+'\',\''+p.id+'\',null,1);dupaEdit()">Scoate din tură</button></div>';
+  else h+='<div class="note" style="margin-bottom:12px">Este liber în ziua asta.</div>';
+  const rz=rezervaZi(nr,z),o=oreSofer(nr,ix);
+  h+='<div class="note'+(Math.abs(o.dif)<1?' ok':'')+'" style="margin-bottom:12px">Luna asta are <b>'+ohm(o.total)+
+    '</b> ore din norma de '+ohm(o.norma)+' — diferență <b>'+(o.dif>0?'+':'')+ohm(o.dif)+'</b>.'+
+    (rz?' În ziua asta are '+ohm(rz)+' ore de rezervă.':'')+'</div>'+
+    '<div class="row" style="margin-bottom:14px">'+
+    (p&&!p.rez?'':'<button class="btn" onclick="puneRezerva(\''+nr+'\',\''+z+'\',480)">Pune rezervă 8.00</button>')+
+    '<button class="btn" onclick="oreRezerva(\''+nr+'\',\''+z+'\')">Ore de rezervă…</button>'+
+    (rz?'<button class="btn dgr" onclick="scoateRezerva(\''+nr+'\',\''+z+'\')">Scoate rezerva</button>':'')+'</div>';
+  const libere=ps.filter(x=>!luate[x.id]),ocupate=ps.filter(x=>luate[x.id]&&luate[x.id]!==nr);
+  h+='<label class="f">Posturi libere ('+libere.length+')</label><div class="lst">';
+  if(!libere.length)h+='<div class="it mut">Nu e niciun post liber.</div>';
+  libere.forEach(x=>{
+    const ix2=cloneIX(ix,[nr]);if(p)delete ix2[nr][z];
+    const bl=blocaj(s,z,x,ix2);
+    h+='<div class="it '+(bl?'':'pick')+'"'+(bl?'':' onclick="mutaPe(\''+nr+'\',\''+z+'\',\''+x.id+'\')"')+'>'+
+      '<span class="mono">'+esc(tl(x))+'</span><span class="sch'+x.sch+'">S'+x.sch+'</span>'+
+      '<span class="mono mut">'+esc(x.i)+'–'+esc(x.r)+'</span><span class="sp"></span>'+
+      (bl?'<span class="mut">'+esc(bl)+'</span>':'<span class="tag v">poate</span>')+'</div>';
+  });
+  h+='</div><label class="f" style="margin-top:14px">Schimbă cu un coleg din ziua asta</label><div class="lst">';
+  ocupate.slice(0,40).forEach(x=>{
+    const alt=luate[x.id];
+    h+='<div class="it pick" onclick="schimbaCu(\''+nr+'\',\''+z+'\',\''+x.id+'\')">'+
+      '<span class="mono">'+esc(tl(x))+'</span><span class="sch'+x.sch+'">S'+x.sch+'</span>'+
+      '<span>'+esc(numeScurt(alt))+'</span><span class="sp"></span><span class="mono mut">'+esc(x.i)+'–'+esc(x.r)+'</span></div>';
+  });
+  h+='</div></div>';
+  dlg(h);
+}
+function oreRezerva(nr,z){
+  const v=prompt('Câte ore de rezervă în ziua asta? Scrie ca pe foaie, de exemplu 2.12 pentru două ore și 12 minute.',
+    ohm(rezervaZi(nr,z)||0));
+  if(v===null)return;
+  const t=String(v).replace(',','.').split('.');
+  const min=(+t[0]||0)*60+(+(t[1]||0));
+  if(min<=0)scoateRezerva(nr,z);else puneRezerva(nr,z,min);
+}
+function cloneIX(ix,nrs){const o={};for(const k in ix)o[k]=ix[k];(nrs||[]).forEach(n=>o[n]=Object.assign({},ix[n]||{}));return o;}
+function mutaPe(nr,z,pid){
+  const ix=indexPlan(),vechi=(ix[nr]||{})[z];
+  if(vechi)pune(z,vechi.id,null,1);
+  pune(z,pid,nr,1);dupaEdit();
+}
+function schimbaCu(nr,z,pid){
+  const ix=indexPlan(),alt=(PLAN[z]||{})[pid],meu=(ix[nr]||{})[z];
+  const p=postDupaId(z,pid);
+  const ix2=cloneIX(ix,[nr,alt]);delete ix2[nr][z];delete ix2[alt][z];
+  const b1=blocaj(sofer(nr),z,p,ix2),b2=meu?blocaj(sofer(alt),z,meu,ix2):null;
+  if(b1||b2){if(!confirm('Atenție:\n'+(b1?numeScurt(nr)+' — '+b1+'\n':'')+(b2?numeScurt(alt)+' — '+b2:'')+'\n\nFaci schimbul oricum?'))return;}
+  pune(z,pid,nr,1);
+  if(meu)pune(z,meu.id,alt,1);
+  dupaEdit();
+}
+function dupaEdit(){salveazaPlan();inchide();reimprospateaza();}
+
+/* ------------------------------ PE ZI ----------------------------------- */
+function deseneazaCalendar(){
+  const zile=zileLuna();
+  if(!ZI_SEL||ZI_SEL.slice(0,7)!==zile[0].slice(0,7))ZI_SEL=zile[0];
+  let h=['Lu','Ma','Mi','Jo','Vi','Sâ','Du'].map(d=>'<div class="dw">'+d+'</div>').join('');
+  const prim=(D(zile[0]).getDay()+6)%7;
+  for(let i=0;i<prim;i++)h+='<div class="cd gol"></div>';
+  zile.forEach(z=>{
+    const tot=posturi(z).length,pus=Object.keys(PLAN[z]||{}).length;
+    const cls=tot&&pus>=tot?'ok':(pus>=tot*.9?'p':'');
+    h+='<button class="cd'+(z===ZI_SEL?' on':'')+(tipZi(z)==='we'?' we':'')+'" onclick="alegeZi(\''+z+'\')" '+
+      'title="'+pus+' din '+tot+'"><div class="d">'+D(z).getDate()+'</div><div class="b '+cls+'"></div></button>';
+  });
+  document.getElementById('cal').innerHTML=h;
+}
+function alegeZi(z){ZI_SEL=z;deseneazaCalendar();deseneazaPosturi();}
+function deseneazaPosturi(){
+  const z=ZI_SEL,ps=posturi(z),pl=PLAN[z]||{},s=sarbNume(z);
+  document.getElementById('zi-cap').innerHTML=D(z).getDate()+' '+LUNI[LN-1]+' '+AN+' · '+ZL[D(z).getDay()]+
+    ' <span class="tag '+(tipZi(z)==='we'?'a':'b')+'">'+(tipZi(z)==='we'?'program de weekend':'zi lucrătoare')+'</span>'+
+    (s?' <span class="tag r">'+esc(s)+'</span>':'')+
+    '<span class="sp"></span><span class="hint">'+Object.keys(pl).length+' din '+ps.length+' posturi acoperite</span>';
+  if(ZMOD==='sofer'){deseneazaFoaieZi();return;}
+  let h='<thead><tr><th>Tura</th><th class="c">Linia</th><th class="c">Schimb</th><th>Ore</th><th class="c">Durată</th>'+
+    '<th>Capăt</th><th>Șofer</th><th class="c">Nr</th><th></th></tr></thead><tbody>';
+  ps.forEach(p=>{
+    const nr=pl[p.id];
+    h+='<tr class="'+(nr?'':'p-gol')+'"><td class="mono">'+esc(p.tur)+'</td><td class="c mono">'+esc(p.linie)+'</td>'+
+      '<td class="c"><span class="sch'+p.sch+'">S'+p.sch+'</span>'+(p.dep?' <span class="tag a">depou</span>':'')+'</td>'+
+      '<td class="mono">'+esc(p.i)+' – '+esc(p.r)+'</td><td class="c mono">'+hm(p.min)+'</td>'+
+      '<td class="mut">'+esc(p.cap||'')+'</td>'+
+      '<td>'+(nr?esc(sofer(nr)?sofer(nr).nume:nr):'<b style="color:var(--rosu)">neacoperit</b>')+'</td>'+
+      '<td class="c">'+(nr?'<span class="nrb">'+esc(nr)+'</span>':'')+'</td>'+
+      '<td class="c"><button class="btn sm" onclick="deschidePost(\''+z+'\',\''+p.id+'\')">Schimbă</button></td></tr>';
+  });
+  document.getElementById('tb-posturi').innerHTML=h+'</tbody>';
+}
+function modZi(m){ZMOD=m;
+  document.getElementById('zm-post').classList.toggle('on',m==='post');
+  document.getElementById('zm-sofer').classList.toggle('on',m==='sofer');
+  deseneazaPosturi();
+}
+function schBaza(s,z){
+  if(s.sch==='1')return 1;if(s.sch==='2')return 2;
+  const a=schPermis(s,z);if(a)return a;
+  return 1;
+}
+function randuriZi(z){
+  const ix=indexPlan();
+  return S.filter(s=>s.activ||(ix[s.nr]||{})[z])
+    .sort((a,b)=>(+a.nr)-(+b.nr))
+    .map(s=>{
+      const p=(ix[s.nr]||{})[z],a=absent(s,z),rz=rezervaZi(s.nr,z);
+      const cod=p&&!p.rez?tl(p):(p&&p.rez?'R':(a||'L'));
+      const obs=p&&p.rez?'rezervă '+ohm(p.min):(rz?'+rez '+ohm(rz):'');
+      return {s:s,cod:cod,sch:p&&!p.rez?p.sch:schBaza(s,z),obs:obs,p:p};
+    });
+}
+function deseneazaFoaieZi(){
+  const z=ZI_SEL,r=randuriZi(z);
+  let h='<thead><tr><th class="c">Nr crt</th><th class="c">Nr serv</th><th class="c">Veh</th>'+
+    '<th>tur + linie</th><th class="c">schimb</th><th>observații</th><th>Nume</th></tr></thead><tbody>';
+  r.forEach((x,i)=>{
+    const lucr=x.p&&!x.p.rez;
+    h+='<tr><td class="c mono">'+(i+1)+'</td><td class="c"><span class="nrb">'+esc(x.s.nr)+'</span></td>'+
+      '<td class="c mono mut">'+esc(x.s.veh||'')+'</td>'+
+      '<td class="mono"'+(lucr?'':' style="color:var(--ink3)"')+'>'+esc(x.cod)+'</td>'+
+      '<td class="c"><span class="sch'+x.sch+'">'+x.sch+'</span></td>'+
+      '<td class="hint">'+esc(x.obs)+'</td><td>'+esc(x.s.nume)+'</td></tr>';
+  });
+  document.getElementById('tb-posturi').innerHTML=h+'</tbody>';
+}
+function deschidePost(z,pid){
+  const p=postDupaId(z,pid);if(!p)return;
+  const ix=indexPlan(),curent=(PLAN[z]||{})[pid],folositi=new Set(Object.values(PLAN[z]||{}));
+  const buni=[],rai=[];
+  activi().forEach(s=>{
+    if(s.nr===curent)return;
+    const b=folositi.has(s.nr)?'lucrează deja în ziua asta':blocaj(s,z,p,ix);
+    b?rai.push([s,b]):buni.push(s);
+  });
+  buni.sort((a,b)=>{
+    const ia=(ix[a.nr]||{})[zPlus(z,-1)],ib=(ix[b.nr]||{})[zPlus(z,-1)];
+    const ca=ia&&ia.id===pid?1:0,cb=ib&&ib.id===pid?1:0;
+    if(ca!==cb)return cb-ca;
+    return Object.keys(ix[a.nr]||{}).length-Object.keys(ix[b.nr]||{}).length;
+  });
+  let h='<div class="dlg-h"><h3>Tura '+esc(tl(p))+'</h3><span class="mut">'+ziScurt(z)+' '+LUNI[LN-1]+
+    ' · schimbul '+p.sch+' · '+esc(p.i)+'–'+esc(p.r)+' ('+hm(p.min)+')</span>'+
+    '<button class="x" onclick="inchide()">✕</button></div><div class="dlg-b">';
+  if(curent)h+='<div class="note ok" style="margin-bottom:12px">Acum o face <b>'+esc(sofer(curent)?sofer(curent).nume:curent)+'</b>. '+
+    '<button class="btn sm" style="margin-left:8px" onclick="pune(\''+z+'\',\''+pid+'\',null,1);dupaEdit()">Lasă postul liber</button></div>';
+  h+='<label class="f">Poate prelua ('+buni.length+')</label><div class="lst">';
+  if(!buni.length)h+='<div class="it mut">Nimeni nu poate prelua cu regulile de acum.</div>';
+  buni.slice(0,80).forEach(s=>{
+    const n=Object.keys(ix[s.nr]||{}).length,ieri=(ix[s.nr]||{})[zPlus(z,-1)];
+    h+='<div class="it pick" onclick="pune(\''+z+'\',\''+pid+'\',\''+s.nr+'\',1);dupaEdit()">'+
+      '<span class="nrb">'+esc(s.nr)+'</span><span>'+esc(s.nume)+'</span>'+
+      (ieri&&ieri.id===pid?'<span class="tag v">era pe tura asta ieri</span>':'')+
+      '<span class="sp"></span><span class="mut mono">'+n+' zile</span></div>';
+  });
+  h+='</div><label class="f" style="margin-top:14px">Nu pot ('+rai.length+')</label><div class="lst">';
+  rai.slice(0,80).forEach(x=>h+='<div class="it"><span class="nrb">'+esc(x[0].nr)+'</span><span>'+esc(numeScurt(x[0].nr))+'</span>'+
+    '<span class="sp"></span><span class="mut">'+esc(x[1])+'</span>'+
+    '<button class="btn sm" onclick="pune(\''+z+'\',\''+pid+'\',\''+x[0].nr+'\',1);dupaEdit()">Pune oricum</button></div>');
+  h+='</div></div>';
+  dlg(h);
+}
+
+/* ---------------------------- SCHIMBURI --------------------------------- */
+function umpleZile(id){const el=document.getElementById(id),v=el.value;
+  el.innerHTML=zileLuna().map(z=>'<option value="'+z+'">'+D(z).getDate()+' '+LUNI[LN-1]+' · '+ZL[D(z).getDay()]+'</option>').join('');
+  if(v&&zileLuna().includes(v))el.value=v;}
+function umpleSoferi(id,l){const el=document.getElementById(id),v=el.value,lst=l||activi();
+  el.innerHTML=lst.map(s=>'<option value="'+s.nr+'">'+esc(s.nume)+' · '+s.nr+'</option>').join('');
+  if(v&&lst.some(s=>s.nr===v))el.value=v;}
+function cautaLiber(){
+  const A=document.getElementById('lb-sofer').value,z=document.getElementById('lb-zi').value;
+  const ix=indexPlan(),pA=(ix[A]||{})[z],box=document.getElementById('lb-rez');
+  if(!pA){box.innerHTML='<div class="note">'+esc(numeScurt(A))+' nu are tură pe '+ziScurt(z)+'. E deja liber în ziua aia.</div>';return;}
+  const zile=zileLuna(),sug=[];
+  activi().forEach(B=>{
+    if(B.nr===A||(ix[B.nr]||{})[z])return;
+    if(blocaj(B,z,pA,ix))return;
+    let cel=null;
+    zile.forEach(z2=>{
+      if(z2===z)return;
+      const q=(ix[B.nr]||{})[z2];if(!q||(ix[A]||{})[z2])return;
+      const ix2=cloneIX(ix,[A,B.nr]);
+      delete ix2[A][z];delete ix2[B.nr][z2];ix2[B.nr][z]=pA;
+      if(blocaj(sofer(A),z2,q,ix2))return;
+      const dif=Math.abs(q.min-pA.min),dist=Math.abs(D(z2)-D(z))/864e5,sc=dif+dist*8;
+      if(!cel||sc<cel.sc)cel={z2:z2,q:q,dif:dif,sc:sc};
+    });
+    sug.push({B:B,c:cel,sc:cel?cel.sc:99999});
+  });
+  sug.sort((a,b)=>a.sc-b.sc);
+  if(!sug.length){box.innerHTML='<div class="note bad">Nimeni nu poate prelua tura <b>'+esc(tl(pA))+
+    '</b> pe '+ziScurt(z)+' fără să încalce regulile. Încearcă un repaus mai mic sau deblochează o linie.</div>';return;}
+  let h='<div class="note" style="margin-bottom:12px"><b>'+esc(numeScurt(A))+'</b> are tura <b>'+esc(tl(pA))+
+    '</b>, schimbul '+pA.sch+', '+esc(pA.i)+'–'+esc(pA.r)+' ('+hm(pA.min)+') pe '+D(z).getDate()+' '+LUNI[LN-1]+'.</div>';
+  sug.slice(0,8).forEach((x,i)=>{
+    h+='<div class="sg"><div class="sg-h"><span class="sg-r">'+(i+1)+'</span><b>'+esc(x.B.nume)+'</b>'+
+      '<span class="nrb">'+esc(x.B.nr)+'</span><span class="sp"></span>'+
+      '<span class="pill'+(x.c?'':' m')+'">'+(x.c?'2 persoane · ore păstrate':'orele lui '+numeScurt(A)+' scad cu '+hm(pA.min))+'</span></div>'+
+      '<div class="sg-l">→ <b>'+esc(numeScurt(x.B.nr))+'</b> preia '+esc(tl(pA))+' S'+pA.sch+' pe '+ziScurt(z)+'</div>';
+    if(x.c)h+='<div class="sg-l">← <b>'+esc(numeScurt(A))+'</b> preia '+esc(tl(x.c.q))+' S'+x.c.q.sch+' pe '+ziScurt(x.c.z2)+
+      ' <span class="mut">('+hm(x.c.q.min)+', diferență '+hm(x.c.dif)+')</span></div>';
+    h+='<button class="btn pri sm" style="margin-top:8px" onclick="aplicaLiber(\''+A+'\',\''+x.B.nr+'\',\''+z+'\''+
+      (x.c?',\''+x.c.z2+'\'':'')+')">Aplică</button></div>';
+  });
+  box.innerHTML=h;
+}
+function aplicaLiber(A,B,z,z2){
+  const ix=indexPlan(),pA=(ix[A]||{})[z];
+  if(!pA){toast('Programul s-a schimbat între timp');return;}
+  pune(z,pA.id,B,1);
+  if(z2){const q=(ix[B]||{})[z2];if(q)pune(z2,q.id,A,1);}
+  salveazaPlan();reimprospateaza();cautaLiber();toast('Schimb aplicat');
+}
+function umpleSwSoferi(){
+  const z=document.getElementById('sw-zi').value,ix=indexPlan();
+  const cu=activi().filter(s=>(ix[s.nr]||{})[z]);
+  umpleSoferi('sw-a',cu);umpleSoferi('sw-b',cu);
+  const a=document.getElementById('sw-a'),b=document.getElementById('sw-b');
+  if(cu.length>1&&a.value===b.value)b.value=cu[1].nr;
+  verificaSchimb();
+}
+function verificaSchimb(){
+  const z=document.getElementById('sw-zi').value,A=document.getElementById('sw-a').value,B=document.getElementById('sw-b').value;
+  const ix=indexPlan(),pA=(ix[A]||{})[z],pB=(ix[B]||{})[z];
+  const box=document.getElementById('sw-rez'),alt=document.getElementById('sw-alt');
+  if(!pA||!pB||A===B){box.innerHTML='<p class="hint">Alege doi colegi diferiți care lucrează amândoi în ziua asta.</p>';alt.innerHTML='';return;}
+  const ix2=cloneIX(ix,[A,B]);delete ix2[A][z];delete ix2[B][z];
+  const bA=blocaj(sofer(A),z,pB,ix2),bB=blocaj(sofer(B),z,pA,ix2);
+  let h='<div class="sg-l"><b>'+esc(numeScurt(A))+'</b>: '+esc(tl(pA))+' S'+pA.sch+' → '+esc(tl(pB))+' S'+pB.sch+'</div>'+
+    '<div class="sg-l"><b>'+esc(numeScurt(B))+'</b>: '+esc(tl(pB))+' S'+pB.sch+' → '+esc(tl(pA))+' S'+pA.sch+'</div>';
+  if(bA||bB)h+='<div class="note bad" style="margin:10px 0">'+(bA?esc(numeScurt(A))+' — '+esc(bA)+'<br>':'')+
+    (bB?esc(numeScurt(B))+' — '+esc(bB):'')+'</div><button class="btn" onclick="aplicaSchimb(\''+z+'\',\''+A+'\',\''+B+'\')">Aplică oricum</button>';
+  else{const d=pB.min-pA.min;
+    h+='<div class="note ok" style="margin:10px 0">Se poate. '+esc(numeScurt(A))+
+      (d?' iese cu '+hm(Math.abs(d))+(d>0?' în plus':' în minus')+' în ziua asta.':' rămâne cu aceleași ore.')+'</div>'+
+      '<button class="btn pri" onclick="aplicaSchimb(\''+z+'\',\''+A+'\',\''+B+'\')">Aplică schimbul</button>';}
+  box.innerHTML=h;
+  const cand=[];
+  activi().forEach(o=>{
+    if(o.nr===A||o.nr===B)return;const q=(ix[o.nr]||{})[z];if(!q)return;
+    const ix3=cloneIX(ix,[A,o.nr]);delete ix3[A][z];delete ix3[o.nr][z];
+    if(blocaj(sofer(A),z,q,ix3)||blocaj(o,z,pA,ix3))return;
+    cand.push([o,q,Math.abs(q.min-pA.min)]);
+  });
+  cand.sort((a,b)=>a[2]-b[2]);
+  alt.innerHTML=cand.length?'<div class="panel"><div class="panel-h">Alți parteneri posibili pentru '+esc(numeScurt(A))+
+    ' ('+cand.length+')</div><div class="lst" style="border:0;max-height:none">'+
+    cand.slice(0,25).map(x=>'<div class="it pick" onclick="alegePartener(\''+x[0].nr+'\')">'+
+      '<span class="nrb">'+esc(x[0].nr)+'</span><span>'+esc(x[0].nume)+'</span><span class="mono mut">'+esc(tl(x[1]))+' S'+x[1].sch+'</span>'+
+      '<span class="sp"></span><span class="mut">diferență '+hm(x[2])+'</span></div>').join('')+'</div></div>'
+    :'<div class="note">Niciun alt partener nu poate face schimb cu '+esc(numeScurt(A))+' în ziua asta.</div>';
+}
+function alegePartener(nr){document.getElementById('sw-b').value=nr;verificaSchimb();}
+function aplicaSchimb(z,A,B){
+  const ix=indexPlan(),pA=(ix[A]||{})[z],pB=(ix[B]||{})[z];if(!pA||!pB)return;
+  pune(z,pA.id,B,1);pune(z,pB.id,A,1);salveazaPlan();reimprospateaza();verificaSchimb();toast('Schimb aplicat');
+}
+
+/* ------------------------------- TURE ----------------------------------- */
+function modTure(m){TMOD=m;document.getElementById('tm-zl').classList.toggle('on',m==='zl');
+  document.getElementById('tm-we').classList.toggle('on',m==='we');deseneazaTure();}
+function salveazaDB(){try{localStorage.setItem('rep_db',JSON.stringify(DB));}catch(e){}_pc={};}
+function deseneazaTure(){
+  const src=DB[TMOD]||{},chei=Object.keys(src).filter(k=>k[0]!=='_')
+    .sort((a,b)=>{const A=a.split('/'),B=b.split('/');return (+A[1]-+B[1])||(+A[0]-+B[0]);});
+  document.getElementById('c-ture').textContent=Object.keys(DB.zl||{}).filter(k=>k[0]!=='_').length;
+  document.getElementById('t-sumar').textContent=chei.length+' ture · '+(chei.length*2)+' posturi pe zi';
+  document.getElementById('t-valabil').innerHTML='Turele încorporate în aplicație sunt cele valabile din <b>'+
+    esc(DB._valabilDin||'—')+'</b>. Când depoul schimbă indicatorii, modifici aici sau încarci noul db.json.';
+  let h='<thead><tr><th>Tura</th><th class="c">Linia</th><th>Capăt</th>'+
+    '<th class="c">S1 intrare</th><th class="c">S1 ieșire</th><th class="c">S1 ore</th>'+
+    '<th class="c">S2 intrare</th><th class="c">S2 ieșire</th><th class="c">S2 ore</th>'+
+    '<th class="c">S2 din depou</th><th></th></tr></thead><tbody>';
+  chei.forEach(k=>{
+    const d=src[k],l=String(d.linie||k.split('/')[1]||'');
+    const s1=d.s1||{},s2=d.s2||{};
+    h+='<tr><td class="mono">'+esc(k.split('/')[0])+'</td><td class="c mono">'+esc(l)+'</td>'+
+      '<td class="mut">'+esc(s1.c||s2.c||'')+'</td>'+
+      ora(k,'s1','i',s1.i)+ora(k,'s1','r',s1.r)+'<td class="c mono">'+(s1.i&&s1.r?hm(durata(s1.i,s1.r)):'—')+'</td>'+
+      ora(k,'s2','i',s2.i)+ora(k,'s2','r',s2.r)+'<td class="c mono">'+(s2.i&&s2.r?hm(durata(s2.i,s2.r)):'—')+'</td>'+
+      '<td class="c"><input type="checkbox" '+(s2.d?'checked':'')+' onchange="setDepou(\''+k+'\',this.checked)"></td>'+
+      '<td class="c"><button class="btn sm dgr" onclick="stergeTura(\''+k+'\')">Șterge</button></td></tr>';
+  });
+  document.getElementById('tb-ture').innerHTML=h+'</tbody>';
+}
+function ora(k,s,c,v){return '<td class="c"><input type="time" value="'+esc(v||'')+
+  '" style="width:96px" onchange="setOra(\''+k+'\',\''+s+'\',\''+c+'\',this.value)"></td>';}
+function setOra(k,s,c,v){
+  const d=DB[TMOD][k];if(!d)return;d[s]=d[s]||{};d[s][c]=v;salveazaDB();deseneazaTure();}
+function setDepou(k,v){const d=DB[TMOD][k];if(!d)return;d.s2=d.s2||{};d.s2.d=v;salveazaDB();deseneazaTure();}
+function stergeTura(k){
+  if(!confirm('Ștergi tura '+k+' din programul de '+(TMOD==='zl'?'zi lucrătoare':'weekend')+'?'))return;
+  delete DB[TMOD][k];salveazaDB();deseneazaTure();toast('Tura a fost ștearsă');
+}
+function adaugaTura(){
+  let h='<div class="dlg-h"><h3>Adaugă tură</h3><span class="mut">'+(TMOD==='zl'?'zi lucrătoare':'weekend și sărbători')+
+    '</span><button class="x" onclick="inchide()">✕</button></div><div class="dlg-b">'+
+    '<div class="row"><div class="fld" style="flex:1"><label class="f">Numărul turei</label><input id="nt-tur" placeholder="ex. 12"></div>'+
+    '<div class="fld" style="flex:1"><label class="f">Linia</label><input id="nt-lin" placeholder="ex. 7"></div>'+
+    '<div class="fld" style="flex:1"><label class="f">Capăt</label><input id="nt-cap" placeholder="ex. Pantelimon"></div></div>'+
+    '<div class="row"><div class="fld" style="flex:1"><label class="f">Schimb 1 intrare</label><input type="time" id="nt-1i"></div>'+
+    '<div class="fld" style="flex:1"><label class="f">Schimb 1 ieșire</label><input type="time" id="nt-1r"></div></div>'+
+    '<div class="row"><div class="fld" style="flex:1"><label class="f">Schimb 2 intrare</label><input type="time" id="nt-2i"></div>'+
+    '<div class="fld" style="flex:1"><label class="f">Schimb 2 ieșire</label><input type="time" id="nt-2r"></div></div>'+
+    '<label style="display:flex;gap:8px;align-items:center;margin-bottom:14px"><input type="checkbox" id="nt-dep"> Schimbul 2 pleacă din depou</label>'+
+    '<button class="btn pri" onclick="salveazaTuraNoua()">Adaugă</button></div>';
+  dlg(h);
+}
+function salveazaTuraNoua(){
+  const t=document.getElementById('nt-tur').value.trim(),l=document.getElementById('nt-lin').value.trim();
+  if(!t||!l){toast('Completează tura și linia');return;}
+  const k=t+'/'+l;
+  if(DB[TMOD][k]){toast('Tura există deja');return;}
+  DB[TMOD][k]={linie:l,
+    s1:{i:document.getElementById('nt-1i').value,r:document.getElementById('nt-1r').value,c:document.getElementById('nt-cap').value},
+    s2:{i:document.getElementById('nt-2i').value,r:document.getElementById('nt-2r').value,
+        c:document.getElementById('nt-cap').value,d:document.getElementById('nt-dep').checked}};
+  salveazaDB();inchide();deseneazaTure();toast('Tura a fost adăugată');
+}
+function resetTure(){
+  if(!confirm('Revii la turele încorporate în aplicație? Modificările făcute aici se pierd.'))return;
+  DB=JSON.parse(JSON.stringify(DB_BAZA));localStorage.removeItem('rep_db');_pc={};deseneazaTure();toast('Turele au fost readuse');
+}
+function incarcaDbManual(){
+  const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+  i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{try{const d=JSON.parse(r.result);
+      const dd=(d.dudesti&&d.dudesti.zl)?d.dudesti:(d.zl?d:null);
+      if(!dd)throw 0;
+      DB=dd;salveazaDB();deseneazaTure();toast('Turele Dudești au fost încărcate');
+    }catch(e){toast('Fișierul nu conține turele Dudești');}};
+    r.readAsText(f);};
+  i.click();
+}
+
+/* ------------------------------ EXPORT ---------------------------------- */
+function descarca(nume,text,tip){
+  const b=new Blob(['\ufeff'+text],{type:(tip||'text/csv')+';charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nume;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+function cs(v){v=String(v==null?'':v);return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function exportMatrice(){
+  const zile=zileLuna(),ix=indexPlan();
+  const l=['Nr;Veh;Nume;'+zile.map(z=>D(z).getDate()+' '+ZS[D(z).getDay()]).join(';')+';Zile;Total ore;Dif'];
+  S.filter(s=>s.activ||Object.keys(ix[s.nr]||{}).length).forEach(s=>{
+    const o=oreSofer(s.nr,ix);
+    const c=zile.map(z=>{const p=(ix[s.nr]||{})[z],a=absent(s,z);
+      if(p&&p.rez)return 'R';
+      if(p)return tl(p);
+      return a||'L';});
+    l.push(cs(s.nr)+';'+cs(s.veh||'')+';'+cs(s.nume)+';'+c.map(cs).join(';')+';'+o.zile+';'+ohm(o.total)+';'+ohm(o.dif));
+  });
+  descarca('repartizare-'+AN+'-'+String(LN).padStart(2,'0')+'.csv',l.join('\n'));
+}
+function exportZile(){
+  const l=['Data;Zi;Nr crt;Nr serv;Veh;tur+linie;schimb;observatii;Nume'];
+  zileLuna().forEach(z=>{const d=D(z);
+    randuriZi(z).forEach((x,i)=>l.push([dataRo(z)+'.'+AN,ZS[d.getDay()],i+1,x.s.nr,x.s.veh||'',
+      x.cod,x.sch,x.obs,x.s.nume].map(cs).join(';')));});
+  descarca('repartizare-zilnic-'+AN+'-'+String(LN).padStart(2,'0')+'.csv',l.join('\n'));
+}
+function salveazaTot(){
+  const planuri={};
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+    if(k.indexOf('rep_plan_')===0)planuri[k]=localStorage.getItem(k);}
+  descarca('repartizare-copie-'+ISO(new Date())+'.json',
+    JSON.stringify({v:APP_V,soferi:S,set:SET,db:DB,planuri:planuri},null,1),'application/json');
+}
+function incarcaTot(){
+  const i=document.createElement('input');i.type='file';i.accept='.json';
+  i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{try{const o=JSON.parse(r.result);
+      if(!confirm('Înlocuiești datele din acest calculator cu cele din fișier?'))return;
+      if(o.soferi)localStorage.setItem('rep_soferi',JSON.stringify(o.soferi));
+      if(o.set)localStorage.setItem('rep_set',JSON.stringify(o.set));
+      if(o.db)localStorage.setItem('rep_db',JSON.stringify(o.db));
+      if(o.planuri)for(const k in o.planuri)localStorage.setItem(k,o.planuri[k]);
+      location.reload();
+    }catch(e){toast('Fișier invalid');}};
+    r.readAsText(f);};
+  i.click();
+}
+
+/* ------------------------------ setări ---------------------------------- */
+function salveazaSet(){try{localStorage.setItem('rep_set',JSON.stringify(SET));}catch(e){}}
+function setSet(k,v){SET[k]=v;salveazaSet();deseneazaSet();}
+function deseneazaSet(){
+  [['sg-repaus','repaus'],['sg-cont','cont'],['sg-lib','libere'],['sg-pastr','pastreaza'],['sg-rez','rezerva']].forEach(x=>{
+    const el=document.getElementById(x[0]);if(!el)return;
+    el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+SET[x[1]]));});
+}
+
+/* ----------------------------- navigare --------------------------------- */
+function tab(v){
+  VIEW=v;
+  ['soferi','program','gen','schimb','ture'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('on',x===v);
+    document.getElementById('n-'+x).classList.toggle('on',x===v);});
+  if(v==='soferi')deseneazaSoferi();
+  if(v==='program')PMOD==='luna'?deseneazaMatrice():(deseneazaCalendar(),deseneazaPosturi());
+  if(v==='gen'){deseneazaVerificare();deseneazaRaport();}
+  if(v==='schimb'){umpleZile('lb-zi');umpleZile('sw-zi');umpleSoferi('lb-sofer');umpleSwSoferi();}
+  if(v==='ture')deseneazaTure();
+}
+function modProgram(m){PMOD=m;
+  document.getElementById('pm-luna').classList.toggle('on',m==='luna');
+  document.getElementById('pm-zi').classList.toggle('on',m==='zi');
+  document.getElementById('prog-luna').style.display=m==='luna'?'':'none';
+  document.getElementById('prog-zi').style.display=m==='zi'?'':'none';
+  m==='luna'?deseneazaMatrice():(deseneazaCalendar(),deseneazaPosturi());
+}
+function modSchimb(m){SMOD=m;
+  document.getElementById('sm-liber').classList.toggle('on',m==='liber');
+  document.getElementById('sm-tura').classList.toggle('on',m==='tura');
+  document.getElementById('sc-liber').style.display=m==='liber'?'':'none';
+  document.getElementById('sc-tura').style.display=m==='tura'?'':'none';
+}
+function schimbaLuna(d){
+  LN+=d;if(LN>12){LN=1;AN++;}if(LN<1){LN=12;AN--;}
+  ULTIM=null;ZI_SEL=null;incarcaPlan();antet();tab(VIEW);
+}
+function antet(){
+  const n=zileInLuna(AN,LN),lu=zileLuna().filter(lucratoare).length;
+  document.getElementById('luna-nume').textContent=LUNI[LN-1]+' '+AN;
+  const pt=document.getElementById('print-tit');
+  if(pt)pt.textContent='REPARTIZARE · DEPOUL DUDEȘTI · '+LUNI[LN-1].toUpperCase()+' '+AN;
+  document.getElementById('luna-info').innerHTML='<span><b>'+lu+'</b> zile lucrătoare</span><span>normă <b>'+(lu*8)+' h</b></span>';
+  acoperire();
+}
+function acoperire(){
+  const zile=zileLuna();
+  const tot=zile.reduce((a,z)=>a+posturi(z).length,0),pus=zile.reduce((a,z)=>a+Object.keys(PLAN[z]||{}).length,0);
+  const p=tot?Math.round(pus/tot*100):0;
+  document.getElementById('acop-pct').textContent=p+'%';
+  document.getElementById('acop-i').style.width=p+'%';
+}
+function reimprospateaza(){
+  acoperire();
+  if(VIEW==='program')PMOD==='luna'?deseneazaMatrice():(deseneazaCalendar(),deseneazaPosturi());
+  if(VIEW==='gen'){deseneazaVerificare();deseneazaRaport();}
+  if(VIEW==='soferi')deseneazaSoferi();
+}
+function dlg(h){document.getElementById('dlg').innerHTML=h;document.getElementById('ov').classList.add('on');}
+function inchide(){document.getElementById('ov').classList.remove('on');}
+let _tt;function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('on');
+  clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('on'),2400);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')inchide();
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowLeft'&&e.altKey)schimbaLuna(-1);
+  if(e.key==='ArrowRight'&&e.altKey)schimbaLuna(1);
+});
+
+/* ------------------------------ pornire --------------------------------- */
+(function start(){
+  document.getElementById('ver').textContent='v'+APP_V;
+  try{SET=Object.assign(SET,JSON.parse(localStorage.getItem('rep_set')||'{}'));}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem('rep_db')||'null');if(d&&d.zl)DB=d;}catch(e){}
+  const d=new Date();AN=d.getFullYear();LN=d.getMonth()+1;
+  incarcaSoferi();incarcaPlan();antet();deseneazaSet();
+  document.getElementById('c-ture').textContent=Object.keys(DB.zl||{}).filter(k=>k[0]!=='_').length;
+  tab('soferi');
+})();
+</script>
+</body>
+</html>
